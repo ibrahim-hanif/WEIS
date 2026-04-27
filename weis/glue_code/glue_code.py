@@ -92,6 +92,8 @@ class WindPark(om.Group):
         tune_rosco_ivc.add_output('twr_freq',         val=3.2, units='rps',     desc='Tower natural frequency')
         tune_rosco_ivc.add_output('ptfm_freq',        val=0.2, units='rad/s',     desc='Platform natural frequency')
         tune_rosco_ivc.add_output('Kp_float',         val=0.0, units='s',         desc='Floating feedback gain')
+        tune_rosco_ivc.add_output('max_pitch_rate',   val=0.0, units='rad/s',     desc='Maximum pitch rate')
+        tune_rosco_ivc.add_output('max_torque_rate',  val=0.0, units='N*m/s',     desc='Maximum generator torque rate')
 
         self.add_subsystem("tune_rosco_ivc",tune_rosco_ivc)
 
@@ -174,8 +176,8 @@ class WindPark(om.Group):
                 self.connect("rotorse.rp.powercurve.rated_efficiency", "sse_tune.tune_rosco.generator_efficiency")
                 self.connect("tower_grid.height",               "sse_tune.tune_rosco.TowerHt")
                 self.connect("drivetrain.gearbox_efficiency",      "sse_tune.tune_rosco.gearbox_efficiency")
-                self.connect("control.max_pitch_rate" ,         "sse_tune.tune_rosco.max_pitch_rate")
-                self.connect("control.max_torque_rate" ,        "sse_tune.tune_rosco.max_torque_rate")
+                self.connect("tune_rosco_ivc.max_pitch_rate" ,         "sse_tune.tune_rosco.max_pitch_rate")
+                self.connect("tune_rosco_ivc.max_torque_rate" ,        "sse_tune.tune_rosco.max_torque_rate")
 
             else:       # reading openfast model using ROSCO toolbox via rosco_turbine
                 self.connect("rosco_turbine.v_rated"            ,   ["sse_tune.tune_rosco.v_rated"])
@@ -190,8 +192,8 @@ class WindPark(om.Group):
                 self.connect("rosco_turbine.rated_power",           "sse_tune.rated_power")
                 self.connect("rosco_turbine.v_min" ,                "sse_tune.v_min")
                 self.connect("rosco_turbine.v_max" ,                "sse_tune.v_max")
-                self.connect("rosco_turbine.max_pitch_rate" ,       "sse_tune.tune_rosco.max_pitch_rate")
-                self.connect("rosco_turbine.max_torque_rate" ,      "sse_tune.tune_rosco.max_torque_rate")
+                self.connect("tune_rosco_ivc.max_pitch_rate" ,       "sse_tune.tune_rosco.max_pitch_rate")
+                self.connect("tune_rosco_ivc.max_torque_rate" ,      "sse_tune.tune_rosco.max_torque_rate")
                 self.connect("rosco_turbine.omega_min",             "sse_tune.omega_min")
                 self.connect("rosco_turbine.tsr_operational",       "sse_tune.tsr_operational")
 
@@ -355,6 +357,12 @@ class WindPark(om.Group):
                         self.connect(f"floating.memgrid{idx}.cay_usr_grid", f"raft.member{k}:Cay")
                         self.connect(f"floating.memgrid{idx}.cdy_usr_grid", f"raft.member{k}:Cdy")
 
+                # Rigid bodies
+                for k in range(modeling_options['floating']['rigid_bodies']['n_bodies']):
+                    self.connect(f"floating.rigid_body_{k}_node",f"raft.rigid_body_{k}_node")
+                    self.connect(f"floating.rigid_body_{k}_mass",f"raft.rigid_body_{k}_mass")
+                    self.connect(f"floating.rigid_body_{k}_inertia",f"raft.rigid_body_{k}_inertia")
+
                 self.connect("mooring.mooring_nodes", "raft.mooring_nodes")
                 self.connect("mooring.unstretched_length", "raft.unstretched_length")
                 for var in ["diameter","mass_density","stiffness","breaking_load","cost_rate",
@@ -441,7 +449,7 @@ class WindPark(om.Group):
                 self.connect("blade.high_level_blade_props.blade_ref_axis", "aeroelastic.ref_axis_blade")
                 self.connect("configuration.rotor_orientation", "aeroelastic.rotor_orientation")
                 self.connect("blade.high_level_blade_props.r_blade",  "aeroelastic.r")
-                self.connect("blade.outer_shape.section_offset_y", "aeroelastic.le_location")
+                self.connect("blade.pa.section_offset_y_param", "aeroelastic.le_location")
                 self.connect("blade.pa.chord_param",            "aeroelastic.chord")
                 self.connect("blade.pa.twist_param",            "aeroelastic.theta")
                 self.connect("blade.interp_airfoils.coord_xy_interp", "aeroelastic.coord_xy_interp")
@@ -468,7 +476,7 @@ class WindPark(om.Group):
                 self.connect("drivese.generator_rotor_I",       "aeroelastic.GenIner", src_indices=[0])
                 self.connect("drivetrain.gear_ratio",              "aeroelastic.gearbox_ratio")
                 self.connect("rotorse.rp.powercurve.rated_efficiency",  "aeroelastic.generator_efficiency")
-                self.connect("control.max_pitch_rate" ,         "aeroelastic.max_pitch_rate")
+                self.connect("tune_rosco_ivc.max_pitch_rate" ,         "aeroelastic.max_pitch_rate")
                 self.connect("drivetrain.gearbox_efficiency",      "aeroelastic.gearbox_efficiency")
                 self.connect("drivetrain.uptilt",                  "aeroelastic.tilt")
                 self.connect("drivetrain.overhang",                "aeroelastic.overhang")
@@ -542,6 +550,18 @@ class WindPark(om.Group):
                         idx = modeling_options["floating"]["members"]["name2idx"][kname]
                         self.connect(f"floating.memgrp{idx}.s", f"aeroelastic.member{k}_{kname}:s")
                         self.connect(f"floatingse.member{k}_{kname}.wall_thickness", f"aeroelastic.member{k}_{kname}:wall_thickness")
+                        self.connect(f"floatingse.member{k}_{kname}.rho", f"aeroelastic.member{k}_{kname}:rho")
+                        self.connect(f"floatingse.member{k}_{kname}.E", f"aeroelastic.member{k}_{kname}:E")
+                        self.connect(f"floatingse.member{k}_{kname}.G", f"aeroelastic.member{k}_{kname}:G")
+                        self.connect(f"floatingse.member{k}_{kname}.ballast_z_cg", f"aeroelastic.member{k}_{kname}:ballast_z_cg")
+                        self.connect(f"floatingse.member{k}_{kname}.ballast_mass", f"aeroelastic.member{k}_{kname}:ballast_mass")
+                        self.connect(f"floatingse.member{k}_{kname}.ballast_I_base", f"aeroelastic.member{k}_{kname}:ballast_I_base")
+                        self.connect(f"floatingse.member{k}_{kname}:variable_ballast_cg", f"aeroelastic.member{k}_{kname}:variable_ballast_cg")
+                        self.connect(f"floatingse.member{k}_{kname}:variable_ballast_mass", f"aeroelastic.member{k}_{kname}:variable_ballast_mass")
+                        self.connect(f"floatingse.member{k}_{kname}:variable_ballast_I", f"aeroelastic.member{k}_{kname}:variable_ballast_I")
+                        self.connect(f"floatingse.member{k}_{kname}.bulkhead_mass", f"aeroelastic.member{k}_{kname}:bulkhead_mass")
+                        self.connect(f"floatingse.member{k}_{kname}.bulkhead_z_cg", f"aeroelastic.member{k}_{kname}:bulkhead_z_cg")
+                        self.connect(f"floatingse.member{k}_{kname}.bulkhead_I_base", f"aeroelastic.member{k}_{kname}:bulkhead_I_base")
 
                         # Member coefficients
                         if modeling_options['floating']['members']['outer_shape'][k] == "circular":
@@ -589,7 +609,6 @@ class WindPark(om.Group):
                 self.connect("rotorse.wt_class.V_extreme50", "aeroelastic.V_extreme50")
                 self.connect("rotorse.wt_class.V_mean", "aeroelastic.V_mean_iec")
                 self.connect("configuration.rated_power", "aeroelastic.control_ratedPower")
-                self.connect("control.max_TS", "aeroelastic.control_maxTS")
                 self.connect("control.maxOmega", "aeroelastic.control_maxOmega")
                 self.connect("sse_tune.aeroperf_tables.pitch_vector","aeroelastic.pitch_vector")
                 self.connect("sse_tune.aeroperf_tables.tsr_vector", "aeroelastic.tsr_vector")
