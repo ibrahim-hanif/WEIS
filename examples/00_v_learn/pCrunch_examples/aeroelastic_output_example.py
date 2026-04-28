@@ -3,7 +3,7 @@
 # 
 # The `AeroelasticOutput` class is a general container for time-series based data for a single environmental condition (i.e., a single incoming wind spead and turbulence seed value).  This might be a single run of your aeroelastic multibody simulation tool (OpenFAST or HAWC2 or Bladed or QBlade or in-house equivalents) in a larger parametric variation for design load case (DLC) analysis.  The `AeroelasticOutput` class provides data containers and common or convenient manipulations of the data for engineering analysis.  
 # 
-# Analysis that involve multiple time-series simulations, such as a full run of multiple wind speeds and seeds, which yield multiple AeroelasticOutput instances, is done in the *Crunch class*.
+# Analysis that involve multiple time-series simulations, such as a full run of multiple wind speeds and seeds, which yield multiple AeroelasticOutput instances, is done in the `Crunch`` *class*.
 # 
 # This file lays out some workflows and showcases capabilities of the `AeroelasticOutput` class.
 
@@ -13,13 +13,15 @@
 # The `AeroelasticOutput` class can be initialized from an output file or from existing data structures.  pCrunch provides a reader for OpenFAST output files (both binary and ascii).  To expand pCrunch for use with other aeroelastic multibody codes, users could simply use the `openfast_readers.py` file as a template.  If you already have the data in Python, then data structures such as dictionaries, lists, NumPy arrays, and Pandas DataFrames can all be used as a constructor.  Here are some examples with each `myobj` representing a valid AeroelatsicOutput instance:
 
 # %%
+# imports
 import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from pCrunch import AeroelasticOutput, read, FatigueParams
 #%%
-dir_pcrunch = "C:\\Users\\vasudevg\\.conda\\envs\\weis-env\\Lib\\site-packages\\pCrunch"
+# inputs
+from directory_pCrunch import dir_pcrunch
 datadir = os.path.join(dir_pcrunch, 'test', 'data')
 
 # OpenFAST output files
@@ -182,6 +184,7 @@ myobj_with_mag.to_df()
 # %%
 lr = {'TwrBs': ['TwrBsFxt', 'TwrBsFyt']}
 myobj_of_bin.add_load_rose(lr, nsec=6)
+# myobj_of_bin.to_df()
 
 # %% [markdown]
 # ### Binning, windowing, averaging
@@ -194,19 +197,25 @@ myobj_of_bin.add_load_rose(lr, nsec=6)
 
 # %%
 # Trimming data can be done to the full data set
-print( myobj_of_bin.elapsed_time, myobj_of_bin.num_timesteps )
+print( "elapsed_time: ", myobj_of_bin.elapsed_time,
+      " num_timesteps: ", myobj_of_bin.num_timesteps )
+# trim data
+print("After: Trim `self.data` to the data between `tmin` and `tmax`:")
 myobj_of_bin.trim_data(100, 600)
-print( myobj_of_bin.elapsed_time, myobj_of_bin.num_timesteps )
+print( "elapsed_time: ", myobj_of_bin.elapsed_time,
+      " num_timesteps: ", myobj_of_bin.num_timesteps )
 
-# %%
+# %%[markdown]
 # Time windowing convolves an averaging window with the time signal and sets this as the new data array with the same timestep, 
 # but a shorter signal that covers the valid windowing region.
-myobj_of_bin.averaging(30.0)
+#%%
+myobj_of_bin.time_averaging(30.0)
 print( myobj_of_bin.elapsed_time, myobj_of_bin.num_timesteps, myobj_of_bin.dt)
 
-# %%
+# %%[markdown]
 # Time binning results in a downsampled data set that represents the average for each bin
-myobj_of_bin.binning(30.0)
+#%%
+myobj_of_bin.time_binning(30.0)
 print( myobj_of_bin.elapsed_time, myobj_of_bin.num_timesteps, myobj_of_bin.dt)
 
 # %% [markdown]
@@ -222,7 +231,7 @@ plt.ylabel('PSD')
 plt.grid()
 
 # %% [markdown]
-# The user can also adjust the length of the FFT operation by passing the `psd` function an integer value.  This is usually done to zero-pad the FFT to a length longer than the data vector.
+# The user can also adjust the length of the FFT operation by passing that in the `psd` function an integer value.  This is usually done to zero-pad the FFT to a length longer than the data vector.
 # 
 # Further operations on the frequency domain data are also possible, such as binning to achieve greater windowed smoothing than the `psd` function naturally gives (using the SciPy Welch algorithm with Hann-window smoothing).
 
@@ -236,16 +245,19 @@ myobj_from_df.summary_stats()
 # %%
 myobj_from_df.summary_stats()['WindVxi']['mean']
 
-# %%
+# %%[markdown]
 # It is helpful to know the value of other channels when one of interest is at its extreme value
+# %%
 myobj_from_df.extremes()
 
-# %%
+# %%[markdown]
 # This can be done for the whole dataset (which can be a large NxN output), or specific channels
+# %%
 myobj_of_ascii.extremes(['RotTorq','TwrBsFyt'])
 
-# %%
+# %%[markdown]
 # The extremes is done using the maximum value by default, but 'min' and 'absmax' are also available
+# %%
 myobj_from_df.extremes(stat='min')
 
 # %%
@@ -350,7 +362,7 @@ myobj_of_ascii.total_travel('BldPitch1')
 # %% [markdown]
 # ## Calculating fatigue
 # 
-# pCrunch can compute damage equivalent loads and, optionally, traditional Palmgren-Miner damage.  Computing these quantities requires additional inputs for material properties, S-N curve parameters, and some algorithm choices (although most of the work is handed off to the `fatpack` module.  These additional parameters would most likely vary from one channel to the next.  For instance, blade composites will use different inputs that the structural steel in the tower or the fancy steel in the low-speed shaft.  To facilitate these additional inputs, pCrunch provides a `FatigueParams` class that both contains the necessary parameters and interfaces with `fatpack`.  Association between a load channel and a FatigueParams instance is done with a dictionary, similar to the magnitude channels.
+# pCrunch can compute damage equivalent loads and, optionally, traditional Palmgren-Miner damage.  Computing these quantities requires additional inputs for material properties, S-N curve parameters, and some algorithm choices (although most of the work is handed off to the `fatpack` module).  These additional parameters would most likely vary from one channel to the next.  For instance, blade composites will use different inputs than the structural steel in the tower or the fancy steel in the low-speed shaft.  To facilitate these additional inputs, pCrunch provides a `FatigueParams` class that both contains the necessary parameters and interfaces with `fatpack`.  Association between a load channel and a FatigueParams instance is done with a dictionary, similar to the magnitude channels.
 # 
 # Instead of using the same examples as above, here we'll build a couple of sinusoids to understand the numerics a bit better.  One sinusoid is centered at y=0 and the other at y=80kN.
 
@@ -369,7 +381,7 @@ myobj_of_ascii.total_travel('BldPitch1')
 #    Units are left to the user but must be consistent for all inputs.
 # 
 # 5. Specify the slope and the S-intercept point assuming a perflectly linear S-N curve
-#    (which might not be the actual ultimate failure stress of the material.
+#    (which might not be the actual ultimate failure stress of the material).
 #    Required keywords are `slope` and `S_intercept`.
 #    Units are left to the user but must be consistent for all inputs.
 # 
@@ -402,15 +414,15 @@ plt.loglog(NN, myparam1.get_stress(NN),
           NN, myparam4.get_stress(NN),
           NN, myparam5.get_stress(NN),
           NN, myparam6.get_stress(NN))
-plt.xlabel('Endurance')
-plt.ylabel('Stress')
+plt.xlabel('Endurance (# of cycles)')
+plt.ylabel('Stress [Pa]')
 plt.legend([str(m+1) for m in range(6)])
 plt.grid()
 
 # %% [markdown]
 # ### Fatigue examples
 # 
-# Time-series channel history can be passed directly to the FatigueParams instances to compute damage equivalent loads (DELs) and Palmgren-Miner damage.  Note that the DELs (and damage) are computed fo a equivalent 1 Hz constant cyclic load.
+# Time-series channel history can be passed directly to the FatigueParams instances to compute damage equivalent loads (DELs) and Palmgren-Miner damage.  Note that the DELs (and damage) are computed to an equivalent 1 Hz constant cyclic load.
 
 # %%
 # Compute DELs
