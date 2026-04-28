@@ -18,10 +18,10 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from pCrunch import AeroelasticOutput, read, FatigueParams
+from pCrunch import AeroelasticOutput, read, FatigueParams, __file__
 #%%
 # inputs
-from directory_pCrunch import dir_pcrunch
+dir_pcrunch = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(dir_pcrunch, 'test', 'data')
 
 # OpenFAST output files
