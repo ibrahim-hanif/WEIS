@@ -1,4 +1,4 @@
-General:
+General: #(v) schema: https://weis.readthedocs.io/en/latest/inputs/modeling_schema.html#detailed-modeling-option-descriptions
     verbosity: False  # When set to True, the code prints to screen many infos
     openfast_configuration:
         use_exe: True
@@ -35,14 +35,14 @@ ROSCO:
     U_pc: [12]
 
 
-DLC_driver:
-    metocean_conditions:
+DLC_driver: #(v) https://weis.readthedocs.io/en/latest/dlc_generator.html#design-load-cases-in-weis
+    metocean_conditions: #(v) indiv DLCs used these condns to determ specific sea state, but can also be overwritten
         wind_speed: [1.,3.,5.,7.,9.,11.,13.,15.,17.,19.,21.,23.,25.,27.,29.]
-        wave_height_NSS: [0.84,0.84,0.87,0.99,1.15,1.34,1.58,1.82,2.08,2.34,2.66,2.98,3.28,3.77,3.94]
+        wave_height_NSS: [0.84,0.84,0.87,0.99,1.15,1.34,1.58,1.82,2.08,2.34,2.66,2.98,3.28,3.77,3.94]       #(v) NSS used in DLC 1.1
         wave_period_NSS: [8.3,8.3,8.3,7.7,7.1,6.3,6.1,6.2,6.2,6.7,7.1,7.1,7.7,7.7,7.7]
-        wave_height_fatigue: [0.84,0.84,0.87,0.99,1.15,1.34,1.58,1.82,2.08,2.34,2.66,2.98,3.28,3.77,3.94]
+        wave_height_fatigue: [0.84,0.84,0.87,0.99,1.15,1.34,1.58,1.82,2.08,2.34,2.66,2.98,3.28,3.77,3.94]   #(v) fatigue used in DLC 1.2; along with their `probabilites`
         wave_period_fatigue: [8.3,8.3,8.3,7.7,7.1,6.3,6.1,6.2,6.2,6.7,7.1,7.1,7.7,7.7,7.7]
-        wave_height_SSS: [9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7]
+        wave_height_SSS: [9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7]                      #(v) SSS used in DLC 1.6
         wave_period_SSS: [13.6,13.6,13.6,13.6,13.6,13.6,13.6,13.6,13.6,13.6,13.6,13.6,13.6,13.6,13.6]
         wave_height1: 5.9
         wave_period1: 11.2
@@ -51,5 +51,6 @@ DLC_driver:
 
     DLCs:
         - DLC: "1.1"
-          wind_speed: [12]
+          wind_speed: [12]  #(v) specific inflow wind speed for DLC 1.1
+                            #(v) def n_seeds: [1], but more (6 or 12) typically for converg.
 

@@ -1,6 +1,8 @@
+#%%
 """
-
 Example script to compute the steady-state performance in OpenFAST
+- (v) Users define the initial conditions (pitch, omega: corresponding to each inflow speed) and inflow speed in the same `group`. (cf. line 40-41 & 59-62)
+(v) cf. https://weis.readthedocs.io/en/latest/weis_examples.html#simulate-own-openfast-model
 
 """
 import weis
@@ -11,12 +13,12 @@ import os
 import platform
 import shutil
 from rosco import discon_lib_path
-
+#%%
 if __name__ == "__main__":
 
     # Paths calling the standard modules of WEIS
     fastBatch = runFAST_pywrapper_batch()
-    run_dir1                    = os.path.dirname( os.path.dirname( os.path.realpath(weis.__file__) ) )
+    run_dir1                    = os.path.dirname( os.path.dirname( os.path.realpath(weis.__file__) ) ) # WEIS root directory
     fastBatch.FAST_exe          = shutil.which( "openfast" )   # Path to executable
     fastBatch.FAST_directory    = os.path.join(run_dir1,"examples","00_setup", "OpenFAST_models","IEA-15-240-RWT","IEA-15-240-RWT-Monopile")   # Path to fst directory files
     fastBatch.FAST_InputFile    = "IEA-15-240-RWT-Monopile.fst"   # FAST input file (ext=.fst)
@@ -35,8 +37,8 @@ if __name__ == "__main__":
 
     # Initial conditions for ElastoDyn
     u_ref       = np.arange(3.,26.) # Wind speed vector to specify the initial conditions
-    pitch_ref   = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.5058525323662666, 5.253759185225932, 7.50413344606208, 9.310153958810268, 10.8972969450052, 12.412247669440042, 13.883219268525659, 15.252012626933068, 16.53735488246438, 17.76456777500061, 18.953261878035104, 20.11055307762722, 21.238680277668898, 22.30705111326602, 23.455462501156205] # Pitch values in deg
-    omega_ref   = [2.019140272160114, 2.8047214918577925, 3.594541645994511, 4.359025795823625, 5.1123509774611025, 5.855691196288371, 6.589281196735111, 7.312788026081227, 7.514186181824161, 7.54665511646938, 7.573823812448151, 7.600476033113538, 7.630243938880304, 7.638301051122195, 7.622050377183605, 7.612285710588359, 7.60743945212863, 7.605865650155881, 7.605792924227456, 7.6062185247519825, 7.607153933765292, 7.613179734210654, 7.606737845170748] # Rotor speeds in rpm
+    pitch_ref   = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.5058525323662666, 5.253759185225932, 7.50413344606208, 9.310153958810268, 10.8972969450052, 12.412247669440042, 13.883219268525659, 15.252012626933068, 16.53735488246438, 17.76456777500061, 18.953261878035104, 20.11055307762722, 21.238680277668898, 22.30705111326602, 23.455462501156205] # Pitch values in deg (v: same len as u_ref)
+    omega_ref   = [2.019140272160114, 2.8047214918577925, 3.594541645994511, 4.359025795823625, 5.1123509774611025, 5.855691196288371, 6.589281196735111, 7.312788026081227, 7.514186181824161, 7.54665511646938, 7.573823812448151, 7.600476033113538, 7.630243938880304, 7.638301051122195, 7.622050377183605, 7.612285710588359, 7.60743945212863, 7.605865650155881, 7.605792924227456, 7.6062185247519825, 7.607153933765292, 7.613179734210654, 7.606737845170748] # Rotor speeds in rpm (v: same len as u_ref)
     pitch_init = np.interp(wind_speeds, u_ref, pitch_ref)
     omega_init = np.interp(wind_speeds, u_ref, omega_ref)
 
@@ -66,7 +68,7 @@ if __name__ == "__main__":
         sfx = "dylib"
     else:
         sfx = "so"
-    path2dll = os.path.join(run_dir1, "local","lib","libdiscon."+sfx)
+    path2dll = os.path.join(run_dir1, "local","lib","libdiscon."+sfx) #(v) unused
 
     case_inputs[("ServoDyn","DLL_FileName")] = {"vals":[discon_lib_path], "group":0}
 

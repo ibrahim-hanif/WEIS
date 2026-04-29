@@ -1,6 +1,9 @@
+#%%[markdown] (v)
+# Running DLCs using the WEIS driver with a full set of inputs (files)
+#%%
 import os
 from weis import weis_main
-
+#%%
 # TEST_RUN will reduce the number and duration of simulations
 TEST_RUN = False
 
@@ -15,3 +18,4 @@ wt_opt, modeling_options, opt_options = weis_main(fname_wt_input,
                                                   fname_modeling_options, 
                                                   fname_analysis_options,
                                                   test_run=TEST_RUN)
+# %%

@@ -165,3 +165,48 @@ def CaseGen_General(case_inputs, dir_matrix='', namebase='', save_matrix=True, f
 
 
     return case_list, case_name
+"""(v) What CaseGen_General.py does — summary and key details (copilot chat)
+
+Purpose: Generates a set of cases by taking a Cartesian product of input variable sets (with grouping support) and returns:
+
+case_list: a list of dictionaries (one dict per case) mapping variable name → value
+case_name: a list of case name strings (zero-padded indices, optionally prefixed by namebase)
+Optionally writes out a human-readable text matrix and a YAML (case_matrix.yaml) describing all cases to a specified directory.
+Main function: CaseGen_General(case_inputs, dir_matrix='', namebase='', save_matrix=True, filename_ext='')
+
+case_inputs must be a dict where each key is a variable name and each value is a dict with at least:
+'vals': list of possible values
+'group': an identifier (int/str) that groups variables that should vary together
+
+Behavior:
+Sorts variable names and collects values and group IDs.
+Builds the Cartesian product over unique groups (so variables in same group change together).
+Constructs matrix_out (rows of values for each case), converts items to strings for matrix storage where possible.
+Builds zero-padded case names via case_naming.
+Optionally saves matrix files:
+human-readable text (case_matrix{ext}.txt) produced by save_case_matrix
+YAML file (case_matrix{ext}.yaml) produced by save_case_matrix_yaml
+Returns (case_list, case_name).
+Helper functions
+
+case_naming(n_cases, namebase=None):
+Returns zero-padded numeric names (like 00, 01, ...) sized according to max index digits, optionally prefixed by namebase.
+convert_str(val):
+Tries to coerce string values back to int/float/bool or eval to produce lists/tuples when possible. Falls back to the original value if conversion fails.
+Uses small helper try_type to attempt conversion without throwing.
+save_case_matrix(matrix_out, change_vars, dir_matrix, filename_ext=''):
+Writes a text table with column headers (supports multi-line headers if change_vars items are tuples).
+Pads columns to align text.
+save_case_matrix_yaml(matrix_out, change_vars, dir_matrix, case_names, filename_ext=''):
+Builds a dictionary and converts numpy types into Python types (floats, ints, lists, strings) before calling save_yaml (from openfast_io.FileTools) to write YAML.
+Grouping behavior:
+
+Variables that share the same group index vary together. The Cartesian product is over groups, not over all variables independently.
+Format and outputs
+
+case_list: Python-native types (converted by convert_str), ready for programmatic use.
+case_name: list of strings describing each case.
+Files written (if enabled):
+case_matrix{filename_ext}.txt — aligned text representation
+case_matrix{filename_ext}.yaml — structured YAML with Case_ID and Case_Name and variable columns
+"""
