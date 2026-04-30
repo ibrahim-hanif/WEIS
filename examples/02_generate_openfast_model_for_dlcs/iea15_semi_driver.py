@@ -1,6 +1,7 @@
+#%%
 import os
 from weis import weis_main
-
+#%%
 # TEST_RUN will reduce the number and duration of simulations
 TEST_RUN = False
 
@@ -12,7 +13,7 @@ fname_analysis_options = os.path.join(run_dir, "iea15_semi_analysis.yaml")
 
 analysis_override = {}
 analysis_override["general"] = {}
-
+#%%
 # Option 1: Strip theory model
 analysis_override["general"]["folder_output"] = "outputs/02_iea15_semi/0_strip_theory_modeling"
 
@@ -23,7 +24,7 @@ wt_opt, modeling_options, opt_options = weis_main(fname_wt_input,
                                                  test_run=TEST_RUN,
                                                  analysis_override=analysis_override
                                                  )
-
+#%%
 # Option 2: Hybrid model (strip theory + potential flow)
 analysis_override["general"]["folder_output"] = "outputs/02_iea15_semi/1_hybrid_modeling"
 fname_modeling_options = os.path.join(run_dir, "iea15_semi_modeling_hybrid.yaml")
@@ -33,3 +34,4 @@ wt_opt, modeling_options, opt_options = weis_main(fname_wt_input,
                                                  test_run=TEST_RUN,
                                                  analysis_override=analysis_override
                                                  )
+#%%
