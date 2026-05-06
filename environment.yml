@@ -22,6 +22,7 @@ dependencies:
   - osqp
   - pcrunch>=2.1.5
   - pip
+  - pygmsh==7.1.17 #(v) for 02_eg/hybrid_model example
   - pyhams>=1.3
   - pyvista
   #- pyoptsparse
@@ -35,6 +36,7 @@ dependencies:
     - dearpygui
     - smt
     # - git+https://github.com/NLRWindSystems/RAFT.git@dev
+    # - git+https://github.com/LHEEA/meshmagick/archive/refs/tags/3.4.zip #(v) for 02_eg/hybrid_model example
 # Needs to be done outside of environment file:
 #  - m2w64-toolchain # [win]
 #  - libpython # [win]
