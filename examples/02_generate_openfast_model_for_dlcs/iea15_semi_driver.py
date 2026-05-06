@@ -24,6 +24,9 @@ wt_opt, modeling_options, opt_options = weis_main(fname_wt_input,
                                                  test_run=TEST_RUN,
                                                  analysis_override=analysis_override
                                                  )
+#(v) dzaklind issue #471 (takes 22 hours to run!):
+# - it's running SubDyn, which can resolve internal platform loads, but takes a long time to simulate.
+
 #%%
 # Option 2: Hybrid model (strip theory + potential flow)
 analysis_override["general"]["folder_output"] = "outputs/02_iea15_semi/1_hybrid_modeling"
