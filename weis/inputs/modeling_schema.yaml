@@ -112,7 +112,7 @@ properties:
                         type: integer
                         default: 0
                         enum: [0, 1, 2, 3]
-                        description: User override for potential boundary element modeling. 0 = uses the potential_bem_members list for inviscid force and computes viscous drag with strip theory (members not listed use only strip theory), 1 = no potential BEM modeling for any member (just strip theory), 2 = potential BEM modeling for all members (no strip theory), 3 = use potential BEM modeling only for inviscid forces
+                        description: User override for potential boundary element modeling. 0 = uses the bem_members list for inviscid force and computes viscous drag with strip theory (members not listed use only strip theory), 1 = no potential BEM modeling for any member (just strip theory), 2 = potential BEM modeling for all members (no strip theory), 3 = use potential BEM modeling only for inviscid forces
                     bem_members:
                         type: array
                         description: List of submerged member names to model with potential flow boundary element methods.  Members not listed here will be modeled with strip theory
@@ -155,7 +155,7 @@ properties:
                 type: integer
                 default: 0
                 enum: [0, 1]
-                description: Enable intersection mesh for potential BEM modeling. 0 = no intersection mesh, 1 = intersection mesh; turn on plot_design option for visualizing the mesh.
+                description: Enable intersection mesh for potential BEM modeling. 0 = no intersection mesh, 1 = intersection mesh; turn on plot_designs option for visualizing the mesh. Requires external packages `pygmsh` and `meshmagick` to be installed.
             characteristic_length_min:
                 type: number
                 default: 1.0
@@ -210,7 +210,7 @@ properties:
             plot_designs:
                 type: boolean
                 default: False
-                description: Plot RAFT design iterations in <outputs>/raft_designs
+                description: Plot RAFT design iterations in <outputs>/raft_designs, while using intersection_mesh and relies on the `trimesh` package (part of WEIS).
             runPyHAMS:
                 type: boolean
                 default: True
