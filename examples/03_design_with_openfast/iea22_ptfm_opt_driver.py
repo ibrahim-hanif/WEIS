@@ -1,10 +1,11 @@
+#%%
 #!/usr/bin/env python3
 import os
 from weis import weis_main
 
 # TEST_RUN will reduce the number and duration of simulations
-TEST_RUN = False
-
+TEST_RUN = True # TODO
+#%%
 ## File management
 run_dir = os.path.dirname( os.path.realpath(__file__) )
 fname_wt_input = os.path.join(run_dir, "..", "00_setup", "ref_turbines", "IEA-22-280-RWT_Floater.yaml")
@@ -17,4 +18,4 @@ wt_opt, modeling_options, opt_options = weis_main(fname_wt_input,
                                                  test_run=TEST_RUN
                                                  )
 
-
+#%%

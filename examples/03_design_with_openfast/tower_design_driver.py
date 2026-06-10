@@ -16,5 +16,9 @@ wt_opt, modeling_options, opt_options = weis_main(fname_wt_input,
                                                  fname_analysis_options,
                                                  test_run=TEST_RUN
                                                  )
+# TODO: dzalkind issue #471 (error in FASTLoacCases):
+# - I suggest you review the openfast outputs of the last runs.
+# - I've seen that error for short and steady state simulations, but thought
+# - it was resolved in the latest version of pcrunch.
 
 # %%

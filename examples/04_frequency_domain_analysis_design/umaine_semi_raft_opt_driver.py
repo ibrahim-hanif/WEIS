@@ -1,10 +1,11 @@
+#%%
 import os
 from weis import weis_main
 from wisdem.inputs.validation import load_yaml
 
 # TEST_RUN will reduce the number and duration of simulations
-TEST_RUN = False
-
+TEST_RUN = False # TODO
+#%%
 ## File management
 run_dir = os.path.dirname( os.path.realpath(__file__) )
 fname_wt_input = os.path.join(run_dir, "..", "00_setup", "ref_turbines", "IEA-15-240-RWT_VolturnUS-S_rectangular.yaml")
@@ -24,3 +25,4 @@ standard_raft_input = load_yaml(os.path.join(run_dir, "..", "00_setup", "ref_tur
 assert(this_raft_input != standard_raft_input)
 
 # If the values have changed for a purpose, move this_raft_input to standard_raft_input and commit
+# %%

@@ -32,7 +32,7 @@ design_variables:
 
 constraints:
   control:
-    rotor_overspeed:
+    rotor_overspeed: #(v) (Maximum rotor speed / rated rotor speed) - 1
       flag: True
       min: 0.0
       max: 0.25
@@ -49,7 +49,7 @@ constraints:
       flag: False
     shell_buckling: 
       flag: False
-    Max_Offset:
+    Max_Offset: #(v) Maximum combined surge/sway offset
       flag: True
       max: 30.
 

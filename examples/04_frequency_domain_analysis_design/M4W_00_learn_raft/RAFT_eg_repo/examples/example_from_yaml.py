@@ -1,10 +1,11 @@
-# example script for running RAFT from a YAML input file
+#%%
+# # example script for running RAFT from a YAML input file
 
 import sys
 import matplotlib.pyplot as plt
 import yaml
 import raft
-
+#%%
 def run_example(plot_flag = False):
     # open the design YAML file and parse it into a dictionary for passing to raft
     with open('VolturnUS-S_example.yaml') as file:
@@ -13,13 +14,14 @@ def run_example(plot_flag = False):
     # Create the RAFT model (will set up all model objects based on the design dict)
     model = raft.Model(design)  
 
-    # Evaluate the system properties and equilibrium position before loads are applied
+    # Evaluate the system static properties and equilibrium position before loads are applied
+    # - static props: weight, mass, hydrostatics, and linearized mooring force and stiffness, about the system’s equilibrium position
     model.analyzeUnloaded()
 
-    # Compute natural frequencie
+    # Compute natural frequencies
     model.solveEigen()
 
-    # Simule the different load cases
+    # Simulate the different load cases
     model.analyzeCases(display=1)
 
     if plot_flag:
@@ -30,7 +32,7 @@ def run_example(plot_flag = False):
         model.plot(plot_frame=True) # flag plot_frame is used to plot the structural nodes and rigid links that are part of the structure. The default is False
 
         plt.show()
-
+#%%
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         plot_flag = sys.argv[1].lower() in ["1", "t", "true", "y", "yes", 1, True]
@@ -42,3 +44,4 @@ if __name__ == "__main__":
         
     run_example(plot_flag = plot_flag)
         
+# %%
