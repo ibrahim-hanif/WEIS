@@ -1066,7 +1066,7 @@ platform:
     dz_BEM       : 3.0    #  [m]   axial discretization panel length target for BEM analysis
     da_BEM       : 2.0    #  [m]   azimuthal discretization panel length target for BEM analysis
     potModMaster : 3
-    hydroPath    : './examples/OC4semi-WAMIT_Coefs/marin_semi'      # path to the hydrodynamic data file for the platform
+    hydroPath    : './OC4semi-WAMIT_Coefs/marin_semi'      # path to the hydrodynamic data file for the platform (v) orig: './examples/OC4semi-WAMIT_Coefs/marin_semi'
     potFirstOrder: 1      # [int] 0=do not load pre-computed first-order coefficients, 1= load pre-computed first-order coefficients in WAMIT format (.1 and .3 files)    
     potSecOrder  : 2      # [int] master switch for computing second-order wave forces; 0=do not compute, 1=compute QTFs using slender body approximation, 2=read QTF file in WAMIT format (assuming .12d)
 
