@@ -1112,7 +1112,7 @@ platform:
         # --- ballast ---
         # ---- TODO: adjust / tune below until ( Mass, CG, 6x6 interia, hydrostatic restoring ) match the real TLP WAMIT data
         # ---- run model.analyseUnloaded() and compr printed RB props
-        l_fill    :  1.4         # [m]
+        l_fill    :  0.4         # [m]
         rho_fill  :  5000       # [kg/m3]
 
 mooring: #(v) TODO
