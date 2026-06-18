@@ -1,16 +1,19 @@
+#%%
 # example script for running RAFT with second-order loads computed internally with the slender-body approximation based on Rainey's equation
-
 import numpy as np
 import matplotlib.pyplot as plt
 import yaml
 import raft
 import os.path as path
 
+#%%
+plot_flag = True
+
 # open the design YAML file and parse it into a dictionary for passing to raft
 flNm = 'OC4semi-RAFT_QTF'
 with open(flNm + '.yaml') as file:
     design = yaml.load(file, Loader=yaml.FullLoader)
-
+#%%
 # Create the RAFT model (will set up all model objects based on the design dict)
 model = raft.Model(design)
 
@@ -21,10 +24,20 @@ model.analyzeUnloaded()
 # If more than one case is analyzed, the outputs are numbered sequentially.
 # Two output files are generated:
 # - The QTF, following WAMIT .12d file format. File name is qtf-slender_body-total_Head#p##_Case#_WT#.12d
-# - The RAOs used to computed the QTFs, following WAMIT .4 file format. File name is qtf-slender_body-total_Head#p##_Case#_WT#.12d
+# - The RAOs used to computed the QTFs, following WAMIT .4 file format. File name is raos-slender_body-total_Head#p##_Case#_WT#.12d
 # The Head#p## in the file name indicates the wave heading in degrees (p replaces the decimal point). 
 # Case number starts at 1, but turbine at 0 in conformity with the rest of the code.
 model.analyzeCases(display=1)
 
 # 0.02
 # 12.37
+# %%
+if plot_flag:
+    # Plot the power spectral densities from the load cases
+    model.plotResponses()
+
+    # Visualize the system in its most recently evaluated mean offset position
+    model.plot(plot_frame=True) # flag plot_frame is used to plot the structural nodes and rigid links that are part of the structure. The default is False
+
+    plt.show()
+# %%
