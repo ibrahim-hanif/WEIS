@@ -1,10 +1,10 @@
+#%%
 # example script for running RAFT from a YAML input file
-
 import sys
 import matplotlib.pyplot as plt
 import yaml
 import raft
-
+#%%
 def run_example(plot_flag = False):
     # open the design YAML file and parse it into a dictionary for passing to raft
     with open('VolturnUS-S_withBEM_intersectMesh.yaml') as file:
@@ -30,7 +30,7 @@ def run_example(plot_flag = False):
         model.plot()
 
         plt.show()
-
+#%%
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         plot_flag = sys.argv[1].lower() in ["1", "t", "true", "y", "yes", 1, True]
@@ -42,3 +42,5 @@ if __name__ == "__main__":
         
     run_example(plot_flag = plot_flag)
         
+
+# %%
