@@ -10,7 +10,7 @@ settings:                   # global Settings #(v) TODO
     nIter        :   4      # sets how many iterations to perform in Model.solveDynamics()
     
 site: #(v) TODO
-    water_depth : 200        # [m]      uniform water depth
+    water_depth : 265        # [m]      uniform water depth
     rho_water   : 1025.0     # [kg/m^3] water density
     rho_air     : 1.225      # [kg/m^3] air density
     mu_air      : 1.81e-05   #          air dynamic viscosity
@@ -1158,7 +1158,7 @@ platform:
         rho_fill  :  5000                      # [kg/m3]
 
 # mooring: #(v) TODO
-    water_depth: 266.196907                                  # [m]       uniform water depth
+    water_depth: 265                                  # [m]       uniform water depth
     # tol        : 0.05                                 # Optional, tolerance for the equilibrium solver of the mooring system
     filename: '..\..\..\03_design_with_openfast\M4W_OpenFAST_DLCs_Felix\3_2\main\IEA-15-240-RWT-TLP_MoorDyn.dat'
     
