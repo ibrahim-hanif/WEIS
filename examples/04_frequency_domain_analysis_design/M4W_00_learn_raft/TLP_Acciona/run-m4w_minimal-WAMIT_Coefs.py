@@ -9,7 +9,7 @@ import os
 import os.path as path
 #%%
 # open the design YAML file and parse it into a dictionary for passing to raft
-flNm = 'M4W-minimal-UN-GA-DWG-002'
+flNm = 'M4W-base_case-TLPwamit-mooringGeo'
 current_dir = os.path.dirname(os.path.abspath(__file__))
 flPath = path.join(current_dir, flNm + '.yaml')
 with open(flPath) as file:
@@ -43,11 +43,13 @@ print("Mass:", fowt.M_struc[0,0])
 print("CG:", fowt.rCG)
 print("Hydrostatic stiffness:\n", fowt.C_hydro)
 
+fowt.ms.getCoupledStiffness()
+
 # %%
 # 2. mean resp to steady loads
 model.analyzeCases(display=1) # TODO: or analyzeLoads()
 
-print(model.results['mean'])
+print(model.results['mean_offsets'])
 
 # This gives:
 
@@ -72,7 +74,7 @@ print(model.results['eigen'])
 
 #%%
 # 4. Dynamic response (RAOs / motions)
-model.solveDynamics()
+model.solveDynamics() # TODO
 
 results = model.results['dynamic']
 
@@ -86,3 +88,9 @@ surge_RAO = results['RAO'][0]   # DOF 0 = surge
 pitch_RAO = results['RAO'][4]
 
 #%%
+# 5. Plot responses
+
+model.plotResponses()
+plt.show()
+
+# %%
