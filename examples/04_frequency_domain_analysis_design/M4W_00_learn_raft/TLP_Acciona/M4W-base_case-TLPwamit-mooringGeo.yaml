@@ -20,7 +20,8 @@ cases: #(v) TODO: DLC 6.1 for UN
     keys : [wind_speed, wind_heading, turbulence, turbine_status, yaw_misalign, wave_spectrum, wave_period, wave_height, wave_heading  ]
     data :  #   m/s        deg    % or e.g. IIB_NTM    string            deg         string          (s)         (m)         (deg)
         # -  [     0,         0,            0,          operating,          0,        JONSWAP,         12,         6,           0        ]
-        -  [    37.5,         0,            0.12,    parked,          0,        JONSWAP,         15.52,         14.75,           0       ]
+        -  [    50.0,         0,            0.12,    parked,          0,        JONSWAP,         15.52,         14.75,           0       ] # DLC 6.1
+        -  [    10.59,         0,            IC_ETM,    operating,          0,        JONSWAP,         15.52,         14.75,           0       ] # DLC 1.6 ?
     
 
 turbine: #(v) TODO
@@ -1104,9 +1105,14 @@ platform:
     #       location          : [0.0, 0.0, 0.0]  # [m] coordinates of the location where the load is applied
     #       load              : [0.0, 0.0, 0.0, 0.0, 2.5e8, 0.0]  # [N, N*m] force and moment applied at the location
     # (v) below from `Inputs_Fast_Acciona_UN_V02` t2.3 UN baseline
+        # - type              : point_inertia
+        #   mass              : 26638000 # [kg]
+        #   moments_of_inertia: [7978974827, 7978974827, 10836031924, 0, 0, 0] # Jxx, Jyy, Jzz, Jxy, Jxz, Jyz [kg*m^2]
+        #   location          : [0, 0, -9.63] #
+    # (v) below to match diff wrt `Inputs_Fast_Acciona_UN_V02` t2.3 UN baseline
         - type              : point_inertia
-          mass              : 26638000 # [kg]
-          moments_of_inertia: [7978974827, 7978974827, 10836031924, 0, 0, 0] # Jxx, Jyy, Jzz, Jxy, Jxz, Jyz [kg*m^2]
+          mass              : 11851287.5518049 # [kg]
+          moments_of_inertia: [1755150784.39761,1755150784.39761,2427022856.53985, 0, 0, 0] # Jxx, Jyy, Jzz, Jxy, Jxz, Jyz [kg*m^2]
           location          : [0, 0, -9.63] #
 
     members: # list of all members
@@ -1152,8 +1158,9 @@ platform:
         # --- ballast ---
         # ---- TODO: adjust / tune below until ( Mass, CG, 6x6 interia, hydrostatic restoring ) match the real TLP WAMIT data
         # ---- run model.analyseUnloaded() and compr printed RB props
-        l_fill    :  1.4                       # [m]
-        rho_fill  :  5000                      # [kg/m3]
+        l_fill    :  1.0                       # [m] 6.48 (w/o additional_effects)
+        rho_fill  :  1000                      # [kg/m3]
+
 
 mooring: # copied from `VoltunUS-S_example.yaml` and `Inputs_Fast_Acciona_UN_V02` (t2.3, final base case, utsira)
     water_depth: 265                                  # [m]       uniform water depth

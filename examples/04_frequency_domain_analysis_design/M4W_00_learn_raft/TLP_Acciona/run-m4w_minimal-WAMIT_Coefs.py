@@ -18,18 +18,6 @@ with open(flPath) as file:
 # Create the RAFT model (will set up all model objects based on the design dict)
 model = raft.Model(design)
 
-# Evaluate the system properties and equilibrium position before loads are applied
-model.analyzeUnloaded()
-
-# %%
-# "resuls" dict: RAFT saves all its output data in a “results” dictionary that is a member of the Model class
-results = model.results
-for key,_ in results.items(): print(key)
-
-## PSDs of load cases stored as such, for the 1st turbine [0], 1st load case [0]
-# results['case_metrics'][0][0]
-results["response"]
-
 #%%
 # 1. static properties
 
@@ -38,16 +26,54 @@ results["response"]
 # C55 > 0 (pitch restoring)
 # CG below/near waterplane for stability
 
-fowt = model.fowtList[0]
-print("Mass:", fowt.M_struc[0,0])
-print("CG:", fowt.rCG)
-print("Hydrostatic stiffness:\n", fowt.C_hydro)
+# 1a. Evaluate the system properties and equilibrium position before loads are applied
+model.analyzeUnloaded()
 
-fowt.ms.getCoupledStiffness()
+fowt = model.fowtList[0]
+print("\n Mass:", fowt.M_struc[0,0])
+print("\n CG:", fowt.rCG)
+print("\n Hydrostatic stiffness:\n", fowt.C_hydro)
+
+print("\n Coupled stiffness:\n", fowt.ms.getCoupledStiffness())
+
+# How-to parse the results dict
+"""
+# "resuls" dict: RAFT saves all its output data in a “results” dictionary that is a member of the Model class
+results = model.results
+for key,_ in results.items(): print(key)
+
+# PSDs of load cases stored as such, for the 1st turbine [0], 1st load case [0]
+results['case_metrics'][0][0]
+results["response"]
+"""
+
+#%%
+# 1b. static (mass, CG) properties and print
+model.calcOutputs()
+
+results = model.results
+print("\n Model properties:")
+results['properties']
 
 # %%
-# 2. mean resp to steady loads
-model.analyzeCases(display=1) # TODO: or analyzeLoads()
+# 2. Compute natural frequencies and mode shapes of the system
+# - includes mooring stiffness and added mass effects
+model.solveEigen()
+# ---- post process
+print("\n Eigen-solutions are: \n", model.results['eigen'])
+freq_eigen = model.results['eigen']['frequencies']
+modes_eigen = model.results['eigen']['modes']
+naturalPeriods = 1 / freq_eigen
+print("\n Natural periods:\n", naturalPeriods)
+
+# If any mode:
+
+# is zero → missing stiffness
+# is very high → over-stiff proxy matrix
+
+#%%
+# 3. mean resp to steady loads
+model.analyzeCases(display=1, RAO_plot=True) # TODO: or analyzeLoads()
 
 print(model.results['mean_offsets'])
 
@@ -62,18 +88,8 @@ print(model.results['mean_offsets'])
 # wave drift (if included)
 
 #%%
-# 3. Compute natural frequencies and mode shapes
-model.solveEigen()
-
-print(model.results['eigen'])
-
-# If any mode:
-
-# is zero → missing stiffness
-# is very high → over-stiff proxy matrix
-
-#%%
-# 4. Dynamic response (RAOs / motions)
+"""
+# 4. Dynamic response (RAOs / motions) || used inside analyseCases()
 model.solveDynamics() # TODO
 
 results = model.results['dynamic']
@@ -86,11 +102,17 @@ results = model.results['dynamic']
 freq = results['freq']
 surge_RAO = results['RAO'][0]   # DOF 0 = surge
 pitch_RAO = results['RAO'][4]
+"""
 
 #%%
 # 5. Plot responses
 
 model.plotResponses()
+plt.show()
+
+# %%
+# Visualize the system in its most recently evaluated mean offset position
+model.plot(plot_frame=True) # flag plot_frame is used to plot the structural nodes and rigid links that are part of the structure. The default is False
 plt.show()
 
 # %%
