@@ -33,8 +33,11 @@ fowt = model.fowtList[0]
 print("\n Mass:", fowt.M_struc[0,0])
 print("\n CG:", fowt.rCG)
 print("\n Hydrostatic stiffness:\n", fowt.C_hydro)
-
+print("\n Mooring stiffness:\n", fowt.C_moor)
 print("\n Coupled stiffness:\n", fowt.ms.getCoupledStiffness())
+T_moor = fowt.ms.getTensions()
+print(" \n Mooring tension @ fairleads (kN): \n", T_moor[:8]/1e3 )
+print(" \n Mooring tension @ anchors (kN): \n", T_moor[8:]/1e3 )
 
 # How-to parse the results dict
 """
@@ -112,7 +115,13 @@ plt.show()
 
 # %%
 # Visualize the system in its most recently evaluated mean offset position
-model.plot(plot_frame=True) # flag plot_frame is used to plot the structural nodes and rigid links that are part of the structure. The default is False
+wd = 265 # water depth
+
+model.plot(
+    xbounds=[-wd,wd], ybounds=[-wd,wd],zbounds=[-wd,wd],
+    plot_water=True,plot_frame=True
+)
+# model.plot(plot_frame=True) # flag plot_frame is used to plot the structural nodes and rigid links that are part of the structure. The default is False
 plt.show()
 
 # %%

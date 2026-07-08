@@ -14,14 +14,14 @@ site: #(v) TODO
     rho_water   : 1025.0     # [kg/m^3] water density
     rho_air     : 1.225      # [kg/m^3] air density
     mu_air      : 1.81e-05   #          air dynamic viscosity
-    shearExp    : 0.12       #          shear exponent
+    shearExp    : 0.08       #          shear exponent
     
 cases: #(v) TODO: DLC 6.1 for UN
     keys : [wind_speed, wind_heading, turbulence, turbine_status, yaw_misalign, wave_spectrum, wave_period, wave_height, wave_heading  ]
     data :  #   m/s        deg    % or e.g. IIB_NTM    string            deg         string          (s)         (m)         (deg)
         # -  [     0,         0,            0,          operating,          0,        JONSWAP,         12,         6,           0        ]
         -  [    50.0,         0,            0.12,    parked,          0,        JONSWAP,         15.52,         14.75,           0       ] # DLC 6.1
-        -  [    10.59,         0,            IC_ETM,    operating,          0,        JONSWAP,         15.52,         14.75,           0       ] # DLC 1.6 ?
+        # -  [    10.59,         0,            IC_ETM,    operating,          0,        JONSWAP,         15.52,         14.75,           0       ] # DLC 1.6 ?
     
 
 turbine: #(v) TODO
@@ -38,7 +38,7 @@ turbine: #(v) TODO
     
     nBlades     : 3          # number of blades
     Zhub        : 150.0      # hub height [m]
-    Rhub        : 3.97       # hub radius [m]
+    Rhub        : 3.97       # hub radius [m] = 7.94/2
     precone     : -4.0        # [deg]
     shaft_tilt  : -6.0        # [deg]
     overhang    : -12.0313    # [m]
@@ -1292,8 +1292,8 @@ mooring: # copied from `VoltunUS-S_example.yaml` and `Inputs_Fast_Acciona_UN_V02
     line_types:
       - name: SteelTendon
         diameter: 0.66040       # nominal line diameter (m)
-        mass_density: 880.8799  # Dry Line Linear Density (kg/m) (7850 * 112214*1e-6) <- density * area
-        stiffness: 2.379e10     # Extensional stiffness (N) (212e9 * 112214*1e-6) <- E (modulus) * area
+        mass_density: 880.87989  # Dry Line Linear Density (kg/m) (7850 * 112214*1e-6) <- density * area
+        stiffness: 2.37893e10     # Extensional stiffness (N) (212e9 * 112214*1e-6) <- E (modulus) * area
         transverse_drag: 1.2    # Cdn (normal drag coeff)
         tangential_drag: 0.08   # Cdt (tangential drag coeff)
         # breaking_load:    1e8   # ---- from volturnUS, TODO ----
