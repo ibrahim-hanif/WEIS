@@ -32,7 +32,12 @@ model.analyzeUnloaded()
 fowt = model.fowtList[0]
 print("\n Mass:", fowt.M_struc[0,0])
 print("\n CG:", fowt.rCG)
-print("\n Hydrostatic stiffness:\n", fowt.C_hydro)
+# --- stiffnesses
+C_hydro = fowt.C_hydro
+print("\n Hydrostatic stiffness:\n", C_hydro)
+print("\n - K44, K55 (RAFT) * 1e9: ", C_hydro[3,3]/1e9, C_hydro[4,4]/1e9) # index starts at 0,0 
+print("\n - K44 or K55 (acciona) * 1e9: ", ((2*np.pi/3.9)**2) * 7.98e9 / 1e9 )
+
 print("\n Mooring stiffness:\n", fowt.C_moor)
 print("\n Coupled stiffness:\n", fowt.ms.getCoupledStiffness())
 T_moor = fowt.ms.getTensions()
