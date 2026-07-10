@@ -26,7 +26,7 @@ cases: #(v) TODO: DLC 6.1 for UN
 
 turbine: #(v) TODO
     
-    mRNA          :     1001505.907   #  [kg]       RNA mass: m_blades = 3*68076.969 = 204230.907 kg (from ED.sum), m_yawbearing = 100000 kg, m_hub = 190000 kg, m_nacelle = 507275 kg
+    mRNA          :     1001505.907   #  [kg]       RNA mass: m_blades = 3*68076.969 = 204230.907 kg (from ED.sum), m_yawbearing = 100000 kg, m_hub = 190000 kg, m_nacelle = (v) def: 507275 kg, iea15mw_report: 530888 || mRNA: def = 1001505.907; iea15mw = 1025118.607
     IxRNA         :          0        #  [kg-m2]    RNA moment of inertia about local x axis (assumed to be identical to rotor axis for now, as approx) [kg-m^2]
     IrRNA         :          0        #  [kg-m2]    RNA moment of inertia about local y or z axes [kg-m^2]
     xCG_RNA       :         -7.27     #  [m]        x location of RNA center of mass [m]: xg_blades = -13.0 m, xg_hub = -11.0 m, xg_nac = -4.99 m, xg_yaw = 0.0 m
@@ -1112,8 +1112,8 @@ platform:
         #   location          : [0, 0, -9.63] #
     # (v) below to match diff wrt `Inputs_Fast_Acciona_UN_V02` t2.3 UN baseline
         - type              : point_inertia
-          mass              : 7457901.488846622 # [kg]
-          moments_of_inertia: [171704747.89397717,171704747.89397717,1406281836.2259274, 0, 0, 0] # Jxx, Jyy, Jzz, Jxy, Jxz, Jyz [kg*m^2]
+          mass              : 6484381.8406485915 # [kg]
+          moments_of_inertia: [-57626164.73158741,-57626164.73158741,739674692.4249477, 0, 0, 0] # Jxx, Jyy, Jzz, Jxy, Jxz, Jyz [kg*m^2]
           location          : [0, 0, -9.63] #
 
     members: # list of all members
@@ -1133,7 +1133,7 @@ platform:
         Ca        :  0.93                      # [-]    transverse added mass coefficient (optional, scalar or list of same length as stations)
         CdEnd     :  0.6                       # [-]    end axial drag coefficient        (optional, scalar or list of same length as stations)
         CaEnd     :  1.0                       # [-]    end axial added mass coefficient  (optional, scalar or list of same length as stations) (v) ----
-        rho_shell :  2665                      # [kg/m3] 
+        rho_shell :  2481                      # [kg/m3] (v) C50 conv. concrete
         # --- handling of end caps or any internal structures if we need them --- (v) TODO default used here
         # cap_stations :  [ 0    ]               # [m]  location along member of any inner structures (in same scaling as set by 'stations')
         # cap_t        :  [ 0.001  ]             # [m]  thickness of any internal structures
@@ -1149,17 +1149,17 @@ platform:
         potMod    :  False                      # [bool] Whether to model the member with potential flow (BEM model) plus viscous drag or purely strip theory
         # --- outer shell including hydro---
         stations  :  [0, 26]                  # [-]    location of stations along axis. Will be normalized such that start value maps to rA and end value to rB
-        d         :  [48.5,48.5]              # [m]    diameters if circular or side lengths if rectangular (can be pairs)
+        d         :  [47.3,47.3]              # [m]    diameters if circular or side lengths if rectangular (can be pairs)
         t         :  1.0                      # [m]    wall thicknesses (scalar or list of same length as stations) (v) TODO: what should the thickness be?
         Cd        :  0.6                       # [-]    transverse drag coefficient       (optional, scalar or list of same length as stations) (v) ---- TODO default used here ----
         Ca        :  0.93                      # [-]    transverse added mass coefficient (optional, scalar or list of same length as stations)
         CdEnd     :  1.0                       # [-]    end axial drag coefficient        (optional, scalar or list of same length as stations) 
         CaEnd     :  0.7 # value of 3.0 gives more heave response        # [-]    end axial added mass coefficient  (optional, scalar or list of same length as stations) (v) ----
-        rho_shell :  2033                      # [kg/m3] (v) ALWAC
+        rho_shell :  2481                      # [kg/m3] (v) C50 conv. concrete
         # --- ballast ---
         # ---- TODO: adjust / tune below until ( Mass, CG, 6x6 interia, hydrostatic restoring ) match the real TLP WAMIT data
         # ---- run model.analyseUnloaded() and compr printed RB props
-        l_fill    :  2.32                       # [m] 6.48 (w/o additional_effects)
+        l_fill    :  2.13                       # [m] 6.48 (w/o additional_effects)
         rho_fill  :  1000                      # [kg/m3]
 
 

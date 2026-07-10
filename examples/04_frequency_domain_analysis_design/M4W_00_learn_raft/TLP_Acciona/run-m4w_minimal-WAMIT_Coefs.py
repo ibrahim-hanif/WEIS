@@ -7,6 +7,16 @@ import yaml
 import raft
 import os
 import os.path as path
+
+#%%
+# pre-processing: equivalent area (water-plane) of the TLP hull
+overall_width = 48.5        # between each parallel hull sides
+side_length = 33.34         # between porches (for mooring line attachment)
+porch_equi_tri_len = (overall_width-side_length)/2
+wpa_equi = (overall_width**2) - 4*(0.5*porch_equi_tri_len**2)
+equi_sq_len = np.sqrt(wpa_equi)
+print(" Equivalent TLP hull side length for same WPA = ", equi_sq_len)
+
 #%%
 # analysis flags
 flag_flex_tower = False # False for rigid tower
