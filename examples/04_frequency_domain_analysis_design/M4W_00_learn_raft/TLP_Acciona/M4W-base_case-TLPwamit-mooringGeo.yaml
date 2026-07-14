@@ -1291,7 +1291,7 @@ mooring: # copied from `VoltunUS-S_example.yaml` and `Inputs_Fast_Acciona_UN_V02
         length: 266.64
 
     line_types:
-      - name: SteelTendon
+      - name: SteelTendon # API 5L grade pipe X80
         diameter: 0.66040       # nominal line diameter (m)
         mass_density: 880.87989  # Dry Line Linear Density (kg/m) (7850 * 112214*1e-6) <- density * area
         stiffness: 2.37893e10     # Extensional stiffness (N) (212e9 * 112214*1e-6) <- E (modulus) * area
