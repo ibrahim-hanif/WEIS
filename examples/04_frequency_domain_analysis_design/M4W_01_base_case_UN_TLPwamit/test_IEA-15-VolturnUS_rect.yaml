@@ -1,20 +1,20 @@
 windIO_version: '2.0'
-name: M4W 15MW Offshore Turbine, with taped chord tip design
-comments: IEA-15's rotor, DD-DT and tower, with TLP (acciona) modelling using raft and pre-computed WAMIT hydro BEM file path input; this file is based on IEA-15-240-RWT_VolturnUS-S_rectangular.yaml
+name: IEA 15MW Offshore Reference Turbine, with taped chord tip design
 assembly:
     turbine_class: I
-    turbulence_class: C # B
+    turbulence_class: B
     drivetrain: direct_drive
     rotor_orientation: Upwind
     number_of_blades: 3
-    hub_height: 152.5 # 150.0; 2.5m added for m4w
-    rotor_diameter: 240.0 #241.94
+    hub_height: 150.0
+    rotor_diameter: 241.94
     rated_power: 15000000.0
     lifetime: 25.0
     cut_in_wind_speed: 3.0
     cut_out_wind_speed: 25.0
+
 components:
-    blade: # untouched, iea15mw's
+    blade:
         reference_axis:
             x:
                 grid: [0.0, 0.02040816326530612, 0.04081632653061224, 0.061224489795918366, 0.08163265306122448, 0.1020408163265306, 0.12244897959183673, 0.14285714285714285, 0.16326530612244897, 0.18367346938775508, 0.2040816326530612, 0.22448979591836732, 0.24489795918367346, 0.26530612244897955, 0.2857142857142857, 0.3061224489795918, 0.32653061224489793, 0.3469387755102041, 0.36734693877551017, 0.3877551020408163, 0.4081632653061224, 0.42857142857142855, 0.44897959183673464, 0.4693877551020408, 0.4897959183673469, 0.5102040816326531, 0.5306122448979591, 0.5510204081632653, 0.5714285714285714, 0.5918367346938775, 0.6122448979591836, 0.6326530612244897, 0.6530612244897959, 0.673469387755102, 0.6938775510204082, 0.7142857142857142, 0.7346938775510203, 0.7551020408163265, 0.7755102040816326, 0.7959183673469387, 0.8163265306122448, 0.836734693877551, 0.8571428571428571, 0.8775510204081632, 0.8979591836734693, 0.9183673469387754, 0.9387755102040816, 0.9591836734693877, 0.9795918367346939, 1.0]
@@ -625,7 +625,7 @@ components:
                 structural_damping:
                     mu: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     
-    hub: # untouched, iea15mw's
+    hub:
         diameter: 7.94
         cone_angle: 4.0
         flange_t2shell_t: 6.0
@@ -643,11 +643,11 @@ components:
         spinner_material: glass_uni
         cd: 0.5
     
-    tower: # iea15mw semisub report
+    tower:
         outer_shape:
             outer_diameter:
                 grid: [0.0, 0.10047454902385111, 0.20094909804770222, 0.30142364707155334, 0.40189819609540445, 0.5023727451192556, 0.6028472941431067, 0.7033218431669578, 0.8037963921908089, 0.90427094121466, 1.0]
-                values: [ 10.0,  9.964,  9.967,  9.927,  9.528,  9.149,  8.945,  8.735,  8.405,  7.321,  6.5 ] # iea15mw semisub report
+                values: [10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 6.5]
             cd:
                 grid: [0.0, 1.0]
                 values: [0.5, 0.5]
@@ -658,7 +658,7 @@ components:
                   material: steel
                   thickness:
                       grid: [0.0, 0.10047454902385111, 0.20094909804770222, 0.30142364707155334, 0.40189819609540445, 0.5023727451192556, 0.6028472941431067, 0.7033218431669578, 0.8037963921908089, 0.90427094121466, 1.0]
-                      values: [ 0.082954, 0.082954,  0.083073,  0.082799,  0.0299,  0.027842,  0.025567,  0.022854,  0.02025,  0.018339,  0.021211 ]
+                      values: [0.09, 0.0870568244887821, 0.06969791129654272, 0.06659467020278927, 0.048969783194233195, 0.04562355995431616, 0.028128174258004363, 0.025616868141627953, 0.009881156462835017, 0.009941082963793929, 0.005931142626464429]
         reference_axis:
             x:
                 grid: [0.0, 0.10047454902385111, 0.20094909804770222, 0.30142364707155334, 0.40189819609540445, 0.5023727451192556, 0.6028472941431067, 0.7033218431669578, 0.8037963921908089, 0.90427094121466, 1.0]
@@ -668,285 +668,272 @@ components:
                 values: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
             z:
                 grid: [0.0, 0.10047454902385111, 0.20094909804770222, 0.30142364707155334, 0.40189819609540445, 0.5023727451192556, 0.6028472941431067, 0.7033218431669578, 0.8037963921908089, 0.90427094121466, 1.0]
-                values: [ 17.5, 30.5, 43.5, 56.5, 69.5, 82.5, 95.5, 108.5, 121.5, 134.5, 147.082] # 2.5m added for m4w
-
+                values: [15.0, 28.0, 41.0, 54.0, 67.0, 80.0, 93.0, 106.0, 119.0, 132.0, 144.386]
+    
     floating_platform:
-        transition_piece_mass: 100000.0 # TODO: what should be?
+        transition_piece_mass: 100000.0
         transition_piece_cost: 100000.0
         joints:
-           # concrete shaft
-           -  name: concrete_shaft_keel
-              location: [ 0, 0, 2.0]
-           -  name: concrete_shaft_freeboard
-              location: [ 0, 0, 17.50]
-              transition: true # Whether the transition piece and turbine tower attach at this node
-           
-           # proxy hull
-           -  name: proxy_hull_keel
-              location: [ 0, 0, -24.0]
-           -  name: proxy_hull_freeboard
-              location: [ 0, 0, 2.0]
-           
-           # fairleads of lines
-           -  name: 1_fair
-              location: [ 23.30,  20.77,  2.0 ]
-
-           -  name: 2_fair
-              location: [ 20.77,  23.30,  2.0 ]
-
-           -  name: 3_fair
-              location: [-20.77,  23.30,  2.0 ]
-
-           -  name: 4_fair
-              location: [-23.30,  20.77,  2.0 ]
-
-           -  name: 5_fair
-              location: [-23.30, -20.77,  2.0 ]
-
-           -  name: 6_fair
-              location: [-20.77, -23.30,  2.0 ]
-
-           -  name: 7_fair
-              location: [ 20.77, -23.30,  2.0 ]
-
-           -  name: 8_fair
-              location: [ 23.30, -20.77,  2.0 ]
-
-           # anchors of lines
-           -  name: 1_anchor
-              location: [ 23.30,  20.77, -265.0 ]
-            #   anchor_type: suction, provided below
-
-           -  name: 2_anchor
-              location: [ 20.77,  23.30, -265.0 ]
-
-           -  name: 3_anchor
-              location: [-20.77,  23.30, -265.0 ]
-
-           -  name: 4_anchor
-              location: [-23.30,  20.77, -265.0 ]
-
-           -  name: 5_anchor
-              location: [-23.30, -20.77, -265.0 ]
-
-           -  name: 6_anchor
-              location: [-20.77, -23.30, -265.0 ]
-
-           -  name: 7_anchor
-              location: [ 20.77, -23.30, -265.0 ]
-
-           -  name: 8_anchor
-              location: [ 23.30, -20.77, -265.0 ]
+           -  name: main_keel
+              location: [0.0, 0.0, -20.0]
+           -  name: main_freeboard
+              location: [0.0, 0.0, 15.0]
+              transition: true
+           -  name: col1_keel
+              location: [51.75, 180.0, -20.0]
+              cylindrical: true
+           -  name: col1_freeboard
+              location: [51.75, 180.0, 15.0]
+              cylindrical: true
+           -  name: col2_keel
+              location: [51.75, 60.0, -20.0]
+              cylindrical: true
+           -  name: col2_freeboard
+              location: [51.75, 60.0, 15.0]
+              cylindrical: true
+           -  name: col3_keel
+              location: [51.75, -60.0, -20.0]
+              cylindrical: true
+           -  name: col3_freeboard
+              location: [51.75, -60.0, 15.0]
+              cylindrical: true
+           -  name: anchor1
+              location: [837.8, 180.0, -200.0]
+              cylindrical: true
+           -  name: anchor2
+              location: [837.8, 60.0, -200.0]
+              cylindrical: true
+           -  name: anchor3
+              location: [837.8, -60.0, -200.0]
+              cylindrical: true
 
         members:
-           -  name: concrete_shaft
-              joint1: concrete_shaft_keel 
-              joint2: concrete_shaft_freeboard
-              Ca: 0.93 # Will be used for strip-theory only model
-              Cd: 0.6
+           -  name: main_column
+              joint1: main_keel
+              joint2: main_freeboard
+              Ca: [0.9, 0.9] # Will be used for strip-theory only model
+              Cd: [0.8, 0.8]
               outer_shape:
                   shape: circular
                   outer_diameter:
-                      grid: [0.0, 1.0] # at [ joint1, joint2 ]
-                      values: [11.27, 11.27]
-            #   axial_joints: # none? attachment points for pontoons
-            #      -  name: main_upper_pontoon
-            #         grid: 0.987
-            #      -  name: main_lower_pontoon
-            #         grid: 0.1
-              structure:
-                  layers:
-                     -  name: concrete_shaft_wall
-                        material: steel #TODO: test; concrete_conv_c50
-                        thickness:
-                            grid: [0.0, 1.0]
-                            values: [5.635, 5.635]
-                #   bulkhead: # TODO: none?
-                #       material: steel
-                #       thickness:
-                #           grid: [0.0, 1.0]
-                #           values: [0.05, 0.05]  
-
-           -  name: proxy_hull
-              joint1: proxy_hull_keel
-              joint2: proxy_hull_freeboard
-              Ca: 0.93
-              Cd: 0.6
-              outer_shape:
-                #   shape: rectangular
-                #   side_length_a:
-                #       grid: [0.0, 1.0]
-                #       values: [47.3,47.3]
-                #   side_length_b:
-                #       grid: [0.0, 1.0]
-                #       values: [47.3,47.3]
-                  shape: circular # TODO: test
-                  outer_diameter:
                       grid: [0.0, 1.0]
-                      values: [47.3,47.3]
-            #   axial_joints:
-            #      -  name: main_upper_pontoon
-            #         grid: 0.987
-            #      -  name: main_lower_pontoon
-            #         grid: 0.1
+                      values: [10.0, 10.0]
+              axial_joints:
+                 -  name: main_upper_pontoon
+                    grid: 0.987
+                 -  name: main_lower_pontoon
+                    grid: 0.1
               structure:
                   layers:
-                     -  name: proxy_hull_wall
-                        material: steel #TODO: test; concrete_conv_c50
+                     -  name: main_twall
+                        material: steel
                         thickness:
                             grid: [0.0, 1.0]
-                            values: [1.0,1.0]
-                  bulkhead: # TODO
-                      material: steel # TODO: test; water
+                            values: [0.05, 0.05]
+                  bulkhead:
+                      material: steel
                       thickness:
                           grid: [0.0, 1.0]
-                          values: [2.13,2.13]
+                          values: [0.05, 0.05]
+           -  name: column1
+              joint1: col1_keel
+              joint2: col1_freeboard
+              Ca: [0.9, 0.9]
+              Cd: [0.8, 0.8]
+              outer_shape: &id003
+                  shape: circular
+                  outer_diameter:
+                      grid: [0.0, 1.0]
+                      values: [12.5, 12.5]
+              axial_joints:
+                 -  name: col1_upper_pontoon
+                    grid: 0.987
+                 -  name: col1_lower_pontoon
+                    grid: 0.1
+                 -  name: col1_fairlead
+                    grid: 0.1714
+              structure: &id004
+                  layers:
+                     -  name: col_twall
+                        material: steel
+                        thickness:
+                            grid: [0.0, 1.0]
+                            values: [0.05, 0.05]
+                  bulkhead:
+                      material: steel
+                      thickness:
+                          grid: [0.0, 0.05, 0.2, 1.0]
+                          values: [0.05, 0.05, 0.05, 0.05]
+                  ballast:
+                     -  variable_flag: false
+                        material: slurry
+                        volume: 169.333333
+                        grid: [0.0, 0.05]
+                     -  variable_flag: true
+                        grid: [0.05, 0.2]
+           -  name: column2
+              joint1: col2_keel
+              joint2: col2_freeboard
+              Ca: [0.9, 0.9]
+              Cd: [0.8, 0.8]
+              outer_shape: *id003
+              axial_joints:
+                 -  name: col2_upper_pontoon
+                    grid: 0.987
+                 -  name: col2_lower_pontoon
+                    grid: 0.1
+                 -  name: col2_fairlead
+                    grid: 0.1714
+              structure: *id004
+           -  name: column3
+              joint1: col3_keel
+              joint2: col3_freeboard
+              Ca: [0.9, 0.9]
+              Cd: [0.8, 0.8]
+              outer_shape: *id003
+              axial_joints:
+                 -  name: col3_upper_pontoon
+                    grid: 0.987
+                 -  name: col3_lower_pontoon
+                    grid: 0.1
+                 -  name: col3_fairlead
+                    grid: 0.1714
+              structure: *id004
+           -  name: Y_pontoon_upper1
+              joint1: main_upper_pontoon
+              joint2: col1_upper_pontoon
+              Ca: [1.0, 1.0]
+              Cd: [0.8, 0.8]
+              outer_shape: &id005
+                  shape: circular
+                  outer_diameter:
+                      grid: [0.0, 1.0]
+                      values: [0.91, 0.91]
+              structure: &id006
+                  layers:
+                     -  name: pontoon_upper_twall
+                        material: steel
+                        thickness:
+                            grid: [0.0, 1.0]
+                            values: [0.02, 0.02]
+           -  name: Y_pontoon_upper2
+              joint1: main_upper_pontoon
+              joint2: col2_upper_pontoon
+              Ca: [1.0, 1.0]
+              Cd: [0.8, 0.8]
+              outer_shape: *id005
+              structure: *id006
+           -  name: Y_pontoon_upper3
+              joint1: main_upper_pontoon
+              joint2: col3_upper_pontoon
+              Ca: [1.0, 1.0]
+              Cd: [0.8, 0.8]
+              outer_shape: *id005
+              structure: *id006
+           -  name: Y_pontoon_lower1
+              joint1: main_lower_pontoon
+              joint2: col1_lower_pontoon
+              Ca: [1.4175, 1.1921]
+              Cay: [1.0856, 1.0856]
+              Cd: [7.66, 5.06]
+              Cdy: [4.6, 4.6]
+              outer_shape: &id007
+                  shape: rectangular
+                  side_length_a:
+                      grid: [0.0, 1.0]
+                      values: [12.5, 12.5]
+                  side_length_b:
+                      grid: [0.0, 1.0]
+                      values: [7.0, 7.0]
+              structure: &id008
+                  layers:
+                     -  name: pontoon_lower_twall
+                        material: steel
+                        thickness:
+                            grid: [0.0, 1.0]
+                            values: [0.04, 0.04]
+                  bulkhead:
+                      material: steel
+                      thickness:
+                          grid: [0.0, 1.0]
+                          values: [0.05, 0.05]
                   ballast:
                      -  variable_flag: true
                         grid: [0.0, 1.0]
-    
+           -  name: Y_pontoon_lower2
+              joint1: main_lower_pontoon
+              joint2: col2_lower_pontoon
+              outer_shape: *id007
+              Ca: [1.4175, 1.1921]
+              Cay: [1.0856, 1.0856]
+              Cd: [7.66, 5.06]
+              Cdy: [4.6, 4.6]
+              structure: *id008
+           -  name: Y_pontoon_lower3
+              joint1: main_lower_pontoon
+              joint2: col3_lower_pontoon
+              outer_shape: *id007
+              Ca: [1.4175, 1.1921]
+              Cay: [1.0856, 1.0856]
+              Cd: [7.66, 5.06]
+              Cdy: [4.6, 4.6]
+              structure: *id008
+
     mooring:
         nodes:
-           # fairlead nodes
+           -  name: line1_anchor
+              node_type: fixed
+              joint: anchor1
+              anchor_type: drag_embedment
+           -  name: line2_anchor
+              node_type: fixed
+              joint: anchor2
+              anchor_type: drag_embedment
+           -  name: line3_anchor
+              node_type: fixed
+              joint: anchor3
+              anchor_type: drag_embedment
            -  name: line1_vessel
               node_type: vessel
-              joint: 1_fair
+              joint: col1_fairlead
               fairlead_type: rigid
            -  name: line2_vessel
               node_type: vessel
-              joint: 2_fair
+              joint: col2_fairlead
               fairlead_type: rigid
            -  name: line3_vessel
+              joint: col3_fairlead
               node_type: vessel
-              joint: 3_fair
               fairlead_type: rigid
-           -  name: line4_vessel
-              node_type: vessel
-              joint: 4_fair
-              fairlead_type: rigid
-           -  name: line5_vessel
-              node_type: vessel
-              joint: 5_fair
-              fairlead_type: rigid
-           -  name: line6_vessel
-              node_type: vessel
-              joint: 6_fair
-              fairlead_type: rigid
-           -  name: line7_vessel
-              node_type: vessel
-              joint: 7_fair
-              fairlead_type: rigid
-           -  name: line8_vessel
-              node_type: vessel
-              joint: 8_fair
-              fairlead_type: rigid
-           # anchor nodes
-           -  name: line1_anchor
-              node_type: fixed
-              joint: 1_anchor
-              anchor_type: suction # from the anchor_types list
-           -  name: line2_anchor
-              node_type: fixed
-              joint: 2_anchor
-              anchor_type: suction
-           -  name: line3_anchor
-              node_type: fixed
-              joint: 3_anchor
-              anchor_type: suction
-           -  name: line4_anchor
-              node_type: fixed
-              joint: 4_anchor
-              anchor_type: suction
-           -  name: line5_anchor
-              node_type: fixed
-              joint: 5_anchor
-              anchor_type: suction
-           -  name: line6_anchor
-              node_type: fixed
-              joint: 6_anchor
-              anchor_type: suction
-           -  name: line7_anchor
-              node_type: fixed
-              joint: 7_anchor
-              anchor_type: suction
-           -  name: line8_anchor
-              node_type: fixed
-              joint: 8_anchor
-              anchor_type: suction
-        
         lines:
-           -  name: tendon1
+           -  name: line1
               node1: line1_anchor
               node2: line1_vessel
-              line_type: SteelTendon
-              unstretched_length: 266.64 # unstreched length btw fairlead and anchor
-
-           -  name: tendon2
+              line_type: main
+              unstretched_length: 850.0
+           -  name: line2
               node1: line2_anchor
               node2: line2_vessel
-              line_type: SteelTendon
-              unstretched_length: 266.64
-
-           -  name: tendon3
+              line_type: main
+              unstretched_length: 850.0
+           -  name: line3
               node1: line3_anchor
               node2: line3_vessel
-              line_type: SteelTendon
-              unstretched_length: 266.64
-
-           -  name: tendon4
-              node1: line4_anchor
-              node2: line4_vessel
-              line_type: SteelTendon
-              unstretched_length: 266.64
-
-           -  name: tendon5
-              node1: line5_anchor
-              node2: line5_vessel
-              line_type: SteelTendon
-              unstretched_length: 266.64
-
-           -  name: tendon6
-              node1: line6_anchor
-              node2: line6_vessel
-              line_type: SteelTendon
-              unstretched_length: 266.64
-
-           -  name: tendon7
-              node1: line7_anchor
-              node2: line7_vessel
-              line_type: SteelTendon
-              unstretched_length: 266.64
-
-           -  name: tendon8
-              node1: line8_anchor
-              node2: line8_vessel
-              line_type: SteelTendon
-              unstretched_length: 266.64
-
+              line_type: main
+              unstretched_length: 850.0
         line_types:
-           -  name: SteelTendon # API 5L grade pipe X80
-              diameter: 0.66040       # nominal line diameter (m)
-              type: custom # TODO: what type of line is this? wire, chain, rope, etc
-              mass_density: 880.87989  # Dry Line Linear Density (kg/m) (7850 * 112214*1e-6) <- density * area
-              stiffness: 2.37893e10     # Extensional stiffness (N) (212e9 * 112214*1e-6) <- E (modulus) * area
-              breaking_load: 70134.e3 # min line break tension (N) (625*1e6 * 112214*1e-6) <- (min tensile str) * area
-              cost: 3.8
-              transverse_drag: 1.2    # Cdn (normal drag coeff)
-              tangential_drag: 0.08   # Cdt (tangential drag coeff)
-           
-           -  name: test_line # TODO (def. for testing)
-              diameter: 0.09
+            - name: main
+              diameter: 0.333 # volume-equivalent
               type: chain
               transverse_added_mass: 1.0
               tangential_added_mass: 0.0
               transverse_drag: 1.6
               tangential_drag: 0.1
-
         anchor_types:
-           -  name: suction
-              type: suction # (def.: drag_embedment) suction # TODO
-    
-    drivetrain: # TODO
+           -  name: drag_embedment
+              type: drag_embedment
+
+    drivetrain:
         outer_shape:
             uptilt: 6.0
             distance_tt_hub: 5.614
@@ -1357,35 +1344,8 @@ materials:
       alpha: 0.0
       unit_cost: 1.0
       orth: 0.0
-   -  name: concrete_conv_c50 # TODO: define
-      description: Concrete for the tower and monopile C50/60
-      source: wp2/task2.2/Data_collection/Data_collection.xlsx, (tabs= TLP substructure, BoM - different scen.), https://www.beamdimensions.com/materials/Concrete/EN_1992-1-1/C50-60/
-      rho: 2481.0
-      orth: 0 # ---- required so supplied defaults
-      E: 37.e9 # 37 GPa
-      nu: 0.16 # ---- 
-      alpha: 10.0 # 1/C deg = 1/K
-      G: 16.e9 # 16 GPa
-    #   GIc: 0
-    #   GIIc: 0
-    #   alp0: 0.0
-      Xt: 5.3e6 # 5.3 MPa
-      Xc: 50.e6 # 50 MPa
-      S: 0.45e6
-      Xy: 58.e6 # 58 MPa
-    #   m: 3
-    #   A: 35534648443.719765
-      unit_cost: 0.052 # 120 Euros/m3
-   -  name: water
-      source: https://www.engineeringtoolbox.com/water-density-specific-weight-d_595.html, at 26.7 deg
-      description: Water
-      rho: 1025.0
-      orth: 0 # ---- required so supplied defaults
-      E: 1.0
-      nu: 0.2 # ---- 
-      alpha: 2.57e-4
 
-control: # untouched, iea15mw's
+control:
     min_rotor_speed: 5.000011692174984
     rated_rotor_speed: 7.559987120819503
     rated_power: 15000000.0

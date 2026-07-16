@@ -6,16 +6,20 @@
 import os
 from weis import weis_main
 from wisdem.inputs.validation import load_yaml
-
+#%%
 # TEST_RUN will reduce the number and duration of simulations
 TEST_RUN = True # TODO
 flag_GBO = False # TODO
+
+wt_m4w = True # turbine to analyse: True = m4w / False = iea15mw
 
 #%%
 ## File management
 run_dir = os.path.dirname( os.path.abspath(__file__) )
 # -- geometry
-fname_wt_input = os.path.join(run_dir, "geometryOpt.yaml")
+if wt_m4w: geo_input = "geometryOpt.yaml"
+else: geo_input = "test_IEA-15-VolturnUS_rect.yaml"
+fname_wt_input = os.path.join(run_dir, geo_input)
 # -- modelling
 fname_modeling_options = os.path.join(run_dir, "modelOpts.yaml")
 # -- analysis
@@ -23,6 +27,10 @@ if flag_GBO:
     fname_analysis_options = os.path.join(run_dir, "analysisOpt.yaml")
 else:
     fname_analysis_options = os.path.join(run_dir, "analysisNOopt.yaml")
+
+#%%
+# additional effects of point inertia TODO
+
 
 #%%
 # run WEIS

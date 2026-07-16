@@ -6,7 +6,7 @@ General:
         fail_value: 9999
     potential_flow_modeling:
         bem_method: 3 # = potModMaster in raft yaml
-        bem_members: [] # TODO: what should this be?
+        bem_members: [] # TODO: what should this be? (def. [])
         bem_file_base: 'M:/Vasudev_Gupta/Data/m4w_TLPhydro_UN/M4W_TLP_UN' # = hydroPath in raft yaml (defined in gc_LoadInputs)
 
 WISDEM:
@@ -125,9 +125,9 @@ RAFT:
     #     rigid_bodies:
     #         n_bodies: 1
     # ----
-    # trim_ballast: 2
+    trim_ballast: 0
     # heave_tol: 1
-    # save_designs: True
+    save_designs: True
 
 ROSCO:
     flag: True
