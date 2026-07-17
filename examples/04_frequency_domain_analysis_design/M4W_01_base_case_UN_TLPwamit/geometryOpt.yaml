@@ -688,54 +688,54 @@ components:
               location: [ 0, 0, 2.0]
            
            # fairleads of lines
-           -  name: 1_fair
+           -  name: 1_fair_joint
               location: [ 23.30,  20.77,  2.0 ]
 
-           -  name: 2_fair
+           -  name: 2_fair_joint
               location: [ 20.77,  23.30,  2.0 ]
 
-           -  name: 3_fair
+           -  name: 3_fair_joint
               location: [-20.77,  23.30,  2.0 ]
 
-           -  name: 4_fair
+           -  name: 4_fair_joint
               location: [-23.30,  20.77,  2.0 ]
 
-           -  name: 5_fair
+           -  name: 5_fair_joint
               location: [-23.30, -20.77,  2.0 ]
 
-           -  name: 6_fair
+           -  name: 6_fair_joint
               location: [-20.77, -23.30,  2.0 ]
 
-           -  name: 7_fair
+           -  name: 7_fair_joint
               location: [ 20.77, -23.30,  2.0 ]
 
-           -  name: 8_fair
+           -  name: 8_fair_joint
               location: [ 23.30, -20.77,  2.0 ]
 
            # anchors of lines
-           -  name: 1_anchor
+           -  name: 1_anchor_joint
               location: [ 23.30,  20.77, -265.0 ]
             #   anchor_type: suction, provided below
 
-           -  name: 2_anchor
+           -  name: 2_anchor_joint
               location: [ 20.77,  23.30, -265.0 ]
 
-           -  name: 3_anchor
+           -  name: 3_anchor_joint
               location: [-20.77,  23.30, -265.0 ]
 
-           -  name: 4_anchor
+           -  name: 4_anchor_joint
               location: [-23.30,  20.77, -265.0 ]
 
-           -  name: 5_anchor
+           -  name: 5_anchor_joint
               location: [-23.30, -20.77, -265.0 ]
 
-           -  name: 6_anchor
+           -  name: 6_anchor_joint
               location: [-20.77, -23.30, -265.0 ]
 
-           -  name: 7_anchor
+           -  name: 7_anchor_joint
               location: [ 20.77, -23.30, -265.0 ]
 
-           -  name: 8_anchor
+           -  name: 8_anchor_joint
               location: [ 23.30, -20.77, -265.0 ]
 
         members:
@@ -757,7 +757,7 @@ components:
               structure:
                   layers:
                      -  name: concrete_shaft_wall
-                        material: steel #TODO: test; concrete_conv_c50
+                        material: concrete_conv_c50 #TODO: steel / concrete_conv_c50
                         thickness:
                             grid: [0.0, 1.0]
                             values: [5.635, 5.635]
@@ -773,17 +773,17 @@ components:
               Ca: 0.93
               Cd: 0.6
               outer_shape:
-                #   shape: rectangular
-                #   side_length_a:
-                #       grid: [0.0, 1.0]
-                #       values: [47.3,47.3]
-                #   side_length_b:
-                #       grid: [0.0, 1.0]
-                #       values: [47.3,47.3]
-                  shape: circular # TODO: test
-                  outer_diameter:
+                  shape: rectangular
+                  side_length_a:
                       grid: [0.0, 1.0]
                       values: [47.3,47.3]
+                  side_length_b:
+                      grid: [0.0, 1.0]
+                      values: [47.3,47.3]
+                #   shape: circular # TODO: test
+                #   outer_diameter:
+                #       grid: [0.0, 1.0]
+                #       values: [47.3,47.3]
             #   axial_joints:
             #      -  name: main_upper_pontoon
             #         grid: 0.987
@@ -792,134 +792,136 @@ components:
               structure:
                   layers:
                      -  name: proxy_hull_wall
-                        material: steel #TODO: test; concrete_conv_c50
+                        material: concrete_conv_c50 #TODO: steel / concrete_conv_c50
                         thickness:
                             grid: [0.0, 1.0]
                             values: [1.0,1.0]
                   bulkhead: # TODO
-                      material: steel # TODO: test; water
+                      material: steel # TODO: test; water?
                       thickness:
                           grid: [0.0, 1.0]
                           values: [2.13,2.13]
                   ballast:
-                     -  variable_flag: true
-                        grid: [0.0, 1.0]
+                     -  variable_flag: false # not adjusted by the control system
+                        material: water
+                        grid: [0.0,1.0]
+                        volume: 4370.9517 # mass/density
     
     mooring:
         nodes:
            # fairlead nodes
-           -  name: line1_vessel
+           -  name: 1_fair
               node_type: vessel
-              joint: 1_fair
+              joint: 1_fair_joint
               fairlead_type: rigid
-           -  name: line2_vessel
+           -  name: 2_fair
               node_type: vessel
-              joint: 2_fair
+              joint: 2_fair_joint
               fairlead_type: rigid
-           -  name: line3_vessel
+           -  name: 3_fair
               node_type: vessel
-              joint: 3_fair
+              joint: 3_fair_joint
               fairlead_type: rigid
-           -  name: line4_vessel
+           -  name: 4_fair
               node_type: vessel
-              joint: 4_fair
+              joint: 4_fair_joint
               fairlead_type: rigid
-           -  name: line5_vessel
+           -  name: 5_fair
               node_type: vessel
-              joint: 5_fair
+              joint: 5_fair_joint
               fairlead_type: rigid
-           -  name: line6_vessel
+           -  name: 6_fair
               node_type: vessel
-              joint: 6_fair
+              joint: 6_fair_joint
               fairlead_type: rigid
-           -  name: line7_vessel
+           -  name: 7_fair
               node_type: vessel
-              joint: 7_fair
+              joint: 7_fair_joint
               fairlead_type: rigid
-           -  name: line8_vessel
+           -  name: 8_fair
               node_type: vessel
-              joint: 8_fair
+              joint: 8_fair_joint
               fairlead_type: rigid
            # anchor nodes
-           -  name: line1_anchor
+           -  name: 1_anchor
               node_type: fixed
-              joint: 1_anchor
+              joint: 1_anchor_joint
               anchor_type: suction # from the anchor_types list
-           -  name: line2_anchor
+           -  name: 2_anchor
               node_type: fixed
-              joint: 2_anchor
+              joint: 2_anchor_joint
               anchor_type: suction
-           -  name: line3_anchor
+           -  name: 3_anchor
               node_type: fixed
-              joint: 3_anchor
+              joint: 3_anchor_joint
               anchor_type: suction
-           -  name: line4_anchor
+           -  name: 4_anchor
               node_type: fixed
-              joint: 4_anchor
+              joint: 4_anchor_joint
               anchor_type: suction
-           -  name: line5_anchor
+           -  name: 5_anchor
               node_type: fixed
-              joint: 5_anchor
+              joint: 5_anchor_joint
               anchor_type: suction
-           -  name: line6_anchor
+           -  name: 6_anchor
               node_type: fixed
-              joint: 6_anchor
+              joint: 6_anchor_joint
               anchor_type: suction
-           -  name: line7_anchor
+           -  name: 7_anchor
               node_type: fixed
-              joint: 7_anchor
+              joint: 7_anchor_joint
               anchor_type: suction
-           -  name: line8_anchor
+           -  name: 8_anchor
               node_type: fixed
-              joint: 8_anchor
+              joint: 8_anchor_joint
               anchor_type: suction
         
         lines:
            -  name: tendon1
-              node1: line1_anchor
-              node2: line1_vessel
+              node1: 1_anchor
+              node2: 1_fair
               line_type: SteelTendon
               unstretched_length: 266.64 # unstreched length btw fairlead and anchor
 
            -  name: tendon2
-              node1: line2_anchor
-              node2: line2_vessel
+              node1: 2_anchor
+              node2: 2_fair
               line_type: SteelTendon
               unstretched_length: 266.64
 
            -  name: tendon3
-              node1: line3_anchor
-              node2: line3_vessel
+              node1: 3_anchor
+              node2: 3_fair
               line_type: SteelTendon
               unstretched_length: 266.64
 
            -  name: tendon4
-              node1: line4_anchor
-              node2: line4_vessel
+              node1: 4_anchor
+              node2: 4_fair
               line_type: SteelTendon
               unstretched_length: 266.64
 
            -  name: tendon5
-              node1: line5_anchor
-              node2: line5_vessel
+              node1: 5_anchor
+              node2: 5_fair
               line_type: SteelTendon
               unstretched_length: 266.64
 
            -  name: tendon6
-              node1: line6_anchor
-              node2: line6_vessel
+              node1: 6_anchor
+              node2: 6_fair
               line_type: SteelTendon
               unstretched_length: 266.64
 
            -  name: tendon7
-              node1: line7_anchor
-              node2: line7_vessel
+              node1: 7_anchor
+              node2: 7_fair
               line_type: SteelTendon
               unstretched_length: 266.64
 
            -  name: tendon8
-              node1: line8_anchor
-              node2: line8_vessel
+              node1: 8_anchor
+              node2: 8_fair
               line_type: SteelTendon
               unstretched_length: 266.64
 

@@ -59,7 +59,7 @@ WISDEM:
 Environment:
     air_density: 1.225
     air_dyn_viscosity: 1.81e-5
-    weib_shape_parameter: 2.
+    weib_shape_parameter: 1.97 # shape or 'b'
     air_speed_sound: 340.
     shear_exp: 0.08
     water_density: 1025.0
@@ -67,8 +67,8 @@ Environment:
     soil_shear_modulus: 140.e+6
     soil_poisson: 0.4
     water_depth: 265.0
-    significant_wave_height: 14.75
-    significant_wave_period: 15.52
+    significant_wave_height: 8.384 # NTM DLC 5.1 at highest wind speed (from sima)
+    significant_wave_period: 10.113 # same as above
 
 
 OpenFAST: # Options for WEIS fidelity level 3 = nonlinear time domain
@@ -154,10 +154,10 @@ DLC_driver:
         wave_period_NSS: [6.9, 6.96, 7.02, 7.12, 7.25, 7.43, 7.66, 7.94, 8.27, 8.63, 9.01]
         wave_height_SSS: [6.3, 8, 8, 8.1, 8.5, 8.5, 9.8, 9.8, 9.8, 9.8, 9.9]
         wave_period_SSS: [11.5, 12.7, 12.7, 12.8, 13.1, 13.1, 14.1, 14.1, 14.1, 14.1, 14.1]
-        wave_height1: 6.98 # TODO
-        wave_period1: 11.7
+        wave_height1: 9.6 # from UN publication ----
+        wave_period1: 11.25
         wave_height50: 14.75 # m
-        wave_period50: 15.52 # s
+        wave_period50: 15.52 # s ----
     DLCs: # TODO
         # - DLC: "1.1"
         #   n_seeds: 1

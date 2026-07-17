@@ -42,10 +42,14 @@ wt_opt, modeling_options, opt_options = weis_main(fname_wt_input,
 
 #%%
 # Test that the input we are providing RAFT has not changed
-this_raft_input = load_yaml(os.path.join(run_dir,"outputs","04_umaine_semi_raft_opt","raft_designs","raft_design_0.yaml"))
-standard_raft_input = load_yaml(os.path.join(run_dir, "..", "00_setup", "ref_turbines", "IEA-15-240-RWT_VolturnUS-S_raft.yaml"))
+this_raft_input = load_yaml(
+    os.path.join(run_dir,"outputs","raft_designs","raft_design_0.yaml")
+    )
+standard_raft_input = load_yaml(
+    os.path.join(run_dir, "..", "M4W_00_learn_raft","TLP_Acciona","M4W-base_case-TLPwamit-mooringGeo.yaml")
+    )
 # Disable this test because we get slightly different inputs on the linux CI
-assert(this_raft_input != standard_raft_input)
+assert(this_raft_input == standard_raft_input)
 
 # If the values have changed for a purpose, move this_raft_input to standard_raft_input and commit
 # %%
