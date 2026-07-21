@@ -686,6 +686,10 @@ components:
               location: [ 0, 0, -24.0]
            -  name: proxy_hull_freeboard
               location: [ 0, 0, 2.0]
+        
+           # platform cg
+           -  name: platform_cg
+              location: [0.0, 0.0, -9.63]
            
            # fairleads of lines
            -  name: 1_fair_joint
@@ -806,6 +810,14 @@ components:
                         material: water
                         grid: [0.0,1.0]
                         volume: 4370.9517 # mass/density
+              member_mass_user: 26638000.0
+
+        rigid_bodies:
+           -  joint1: platform_cg
+              mass: 6484381.8406485915
+              cost: 0.0
+              cm_offset: [0.0,0.0,0.0]
+              moments_of_inertia: [57626164.73158741,57626164.73158741,739674692.4249477] # Jxx, Jyy, Jzz [kg*m^2]
     
     mooring:
         nodes:
