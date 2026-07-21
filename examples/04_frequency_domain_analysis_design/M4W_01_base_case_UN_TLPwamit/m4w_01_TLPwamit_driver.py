@@ -11,14 +11,14 @@ from wisdem.inputs.validation import load_yaml
 TEST_RUN = True # TODO
 flag_GBO = False # TODO
 
-wt_m4w = True # turbine to analyse: True = m4w / False = iea15mw
+wt_m4w = False # turbine to analyse: True = m4w / False = iea15mw
 
 #%%
 ## File management
 run_dir = os.path.dirname( os.path.abspath(__file__) )
 # -- geometry
 if wt_m4w: geo_input = "geometryOpt.yaml"
-else: geo_input = "test_IEA-15-VolturnUS_rect.yaml"
+else: geo_input = "prac_IEA-15-VolturnUS_rect.yaml"
 fname_wt_input = os.path.join(run_dir, geo_input)
 # -- modelling
 fname_modeling_options = os.path.join(run_dir, "modelOpts.yaml")

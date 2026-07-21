@@ -121,9 +121,6 @@ RAFT:
     flag: True
     min_freq_BEM: 0.03 # same as raft, def. 0.0159
     potSecOrder: 2
-    # floating: # TODO: to define num of 'user def' point_inertia for raft
-    #     rigid_bodies:
-    #         n_bodies: 1
     # ----
     trim_ballast: 0
     # heave_tol: 1
