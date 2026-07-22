@@ -29,10 +29,6 @@ else:
     fname_analysis_options = os.path.join(run_dir, "analysisNOopt.yaml")
 
 #%%
-# additional effects of point inertia TODO
-
-
-#%%
 # run WEIS
 wt_opt, modeling_options, opt_options = weis_main(fname_wt_input, 
                                                  fname_modeling_options, 
