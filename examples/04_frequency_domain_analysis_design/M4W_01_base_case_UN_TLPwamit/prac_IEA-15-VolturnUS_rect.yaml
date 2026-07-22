@@ -688,24 +688,42 @@ components:
               location: [0.0, 0.0, 2.0]
             #   transition: true
            
-           # fairleads
+           # fairleads of lines
            -  name: 1_fair_joint
-              location: [24.25, 0.0, 2.0]
+              location: [ 23.30,  20.77,  2.0 ]
            -  name: 2_fair_joint
-              location: [0.0, 24.25, 2.0]
+              location: [ 20.77,  23.30,  2.0 ]
            -  name: 3_fair_joint
-              location: [-24.25, 0.0, 2.0]
+              location: [-20.77,  23.30,  2.0 ]
            -  name: 4_fair_joint
-              location: [0.0, -24.25, 2.0]
-           # anchors
+              location: [-23.30,  20.77,  2.0 ]
+           -  name: 5_fair_joint
+              location: [-23.30, -20.77,  2.0 ]
+           -  name: 6_fair_joint
+              location: [-20.77, -23.30,  2.0 ]
+           -  name: 7_fair_joint
+              location: [ 20.77, -23.30,  2.0 ]
+           -  name: 8_fair_joint
+              location: [ 23.30, -20.77,  2.0 ]
+
+           # anchors of lines
            -  name: 1_anchor_joint
-              location: [24.25, 0.0, -265.0]
+              location: [ 23.30,  20.77, -265.0 ]
+            #   anchor_type: suction, provided below
            -  name: 2_anchor_joint
-              location: [0.0, 24.25, -265.0]
+              location: [ 20.77,  23.30, -265.0 ]
            -  name: 3_anchor_joint
-              location: [-24.25, 0.0, -265.0]
+              location: [-20.77,  23.30, -265.0 ]
            -  name: 4_anchor_joint
-              location: [0.0, -24.25, -265.0]
+              location: [-23.30,  20.77, -265.0 ]
+           -  name: 5_anchor_joint
+              location: [-23.30, -20.77, -265.0 ]
+           -  name: 6_anchor_joint
+              location: [-20.77, -23.30, -265.0 ]
+           -  name: 7_anchor_joint
+              location: [ 20.77, -23.30, -265.0 ]
+           -  name: 8_anchor_joint
+              location: [ 23.30, -20.77, -265.0 ]
 
         members:
            -  name: conc_shaft
@@ -781,19 +799,35 @@ components:
            -  name: 1_anchor
               node_type: fixed
               joint: 1_anchor_joint
-              anchor_type: drag_embedment
+              anchor_type: suction
            -  name: 2_anchor
               node_type: fixed
               joint: 2_anchor_joint
-              anchor_type: drag_embedment
+              anchor_type: suction
            -  name: 3_anchor
               node_type: fixed
               joint: 3_anchor_joint
-              anchor_type: drag_embedment
+              anchor_type: suction
            -  name: 4_anchor
               node_type: fixed
               joint: 4_anchor_joint
-              anchor_type: drag_embedment
+              anchor_type: suction
+           -  name: 5_anchor
+              node_type: fixed
+              joint: 5_anchor_joint
+              anchor_type: suction
+           -  name: 6_anchor
+              node_type: fixed
+              joint: 6_anchor_joint
+              anchor_type: suction
+           -  name: 7_anchor
+              node_type: fixed
+              joint: 7_anchor_joint
+              anchor_type: suction
+           -  name: 8_anchor
+              node_type: fixed
+              joint: 8_anchor_joint
+              anchor_type: suction
            # fairleads
            -  name: 1_fair
               node_type: vessel
@@ -811,38 +845,88 @@ components:
               joint: 4_fair_joint
               node_type: vessel
               fairlead_type: rigid
+           -  name: 5_fair
+              node_type: vessel
+              joint: 5_fair_joint
+              fairlead_type: rigid
+           -  name: 6_fair
+              node_type: vessel
+              joint: 6_fair_joint
+              fairlead_type: rigid
+           -  name: 7_fair
+              joint: 7_fair_joint
+              node_type: vessel
+              fairlead_type: rigid
+           -  name: 8_fair
+              joint: 8_fair_joint
+              node_type: vessel
+              fairlead_type: rigid
+
         lines:
            -  name: tendon1
               node1: 1_anchor
               node2: 1_fair
-              line_type: main
+              line_type: SteelTendon
               unstretched_length: 266.64
            -  name: tendon2
               node1: 2_anchor
               node2: 2_fair
-              line_type: main
+              line_type: SteelTendon
               unstretched_length: 266.64
            -  name: tendon3
               node1: 3_anchor
               node2: 3_fair
-              line_type: main
+              line_type: SteelTendon
               unstretched_length: 266.64
            -  name: tendon4
               node1: 4_anchor
               node2: 4_fair
-              line_type: main
+              line_type: SteelTendon
               unstretched_length: 266.64
+           -  name: tendon5
+              node1: 5_anchor
+              node2: 5_fair
+              line_type: SteelTendon
+              unstretched_length: 266.64
+           -  name: tendon6
+              node1: 6_anchor
+              node2: 6_fair
+              line_type: SteelTendon
+              unstretched_length: 266.64
+           -  name: tendon7
+              node1: 7_anchor
+              node2: 7_fair
+              line_type: SteelTendon
+              unstretched_length: 266.64
+           -  name: tendon8
+              node1: 8_anchor
+              node2: 8_fair
+              line_type: SteelTendon
+              unstretched_length: 266.64
+
         line_types:
-            - name: main
+            - name: main # def. for testing
               diameter: 0.333 # volume-equivalent
               type: chain
               transverse_added_mass: 1.0
               tangential_added_mass: 0.0
               transverse_drag: 1.6
               tangential_drag: 0.1
+            - name: SteelTendon # API 5L grade pipe X80
+              diameter: 0.66040       # nominal line diameter (m)
+              type: custom # TODO: what type of line is this? wire, chain, rope, etc
+              mass_density: 880.87989  # Dry Line Linear Density (kg/m) (7850 * 112214*1e-6) <- density * area
+              stiffness: 2.37893e10     # Extensional stiffness (N) (212e9 * 112214*1e-6) <- E (modulus) * area
+              breaking_load: 70134.e3 # min line break tension (N) (625*1e6 * 112214*1e-6) <- (min tensile str) * area
+              cost: 3.8
+              transverse_drag: 1.2    # Cdn (normal drag coeff)
+              tangential_drag: 0.08   # Cdt (tangential drag coeff)
+
         anchor_types:
-           -  name: drag_embedment
+           -  name: drag_embedment # def. for testing
               type: drag_embedment
+           -  name: suction
+              type: suction
 
     drivetrain:
         outer_shape:
