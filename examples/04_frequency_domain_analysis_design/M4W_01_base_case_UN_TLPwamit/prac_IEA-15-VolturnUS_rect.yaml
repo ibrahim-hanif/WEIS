@@ -725,12 +725,16 @@ components:
            -  name: 8_anchor_joint
               location: [ 23.30, -20.77, -265.0 ]
 
+           # platform cg
+           -  name: platform_cg
+              location: [0.0, 0.0, -9.63]
+
         members:
            -  name: conc_shaft
               joint1: conc_shaft_keel
               joint2: conc_shaft_freeboard
-              Ca: 0.9 # Will be used for strip-theory only model
-              Cd: 0.8
+              Ca: 0.6 # Will be used for strip-theory only model
+              Cd: 0.93
               outer_shape:
                   shape: circular
                   outer_diameter:
@@ -739,7 +743,7 @@ components:
               structure:
                   layers:
                      -  name: main_twall
-                        material: steel
+                        material: steel # TODO: change to concrete_conv_c50
                         thickness:
                             grid: [0.0, 1.0]
                             values: [1.0, 1.0] # TODO: 5.635
@@ -752,20 +756,20 @@ components:
            -  name: proxy_hull
               joint1: proxy_hull_keel
               joint2: proxy_hull_freeboard
-              Ca: 0.9
-              Cd: 0.8
+              Ca: 0.6
+              Cd: 0.93
               outer_shape: &id003
-                  shape: circular # TODO: disable
-                  outer_diameter:
+                #   shape: circular # TODO: disable
+                #   outer_diameter:
+                #       grid: [0.0, 1.0]
+                #       values: [47.3, 47.3]
+                  shape: rectangular # TODO: enable
+                  side_length_a:
                       grid: [0.0, 1.0]
-                      values: [47.3, 47.3]
-                #   shape: rectangular # TODO: enable
-                #   side_length_a:
-                #       grid: [0.0, 1.0]
-                #       values: [47.3,47.3]
-                #   side_length_b:
-                #       grid: [0.0, 1.0]
-                #       values: [47.3,47.3]
+                      values: [47.3,47.3]
+                  side_length_b:
+                      grid: [0.0, 1.0]
+                      values: [47.3,47.3]
               structure: &id004
                   layers:
                      -  name: col_twall
@@ -778,20 +782,20 @@ components:
                       thickness:
                           grid: [0.0, 1.0] #[0.0, 0.05, 0.2, 1.0]
                           values: [0.05, 0.05] #[0.05, 0.05, 0.05, 0.05]
-                  ballast:
-                     -  variable_flag: false
-                        material: slurry
-                        volume: 169.333333
-                        grid: [0.0, 0.05]
+                #   ballast:
+                #      -  variable_flag: false
+                #         material: water # slurry
+                #         volume: 546881.985 #169.333333
+                #         grid: [0.0, 0.01]
                     #  -  variable_flag: true
                     #     grid: [0.05, 0.2]
         
         # rigid_bodies: # TODO
         #    -  joint1: platform_cg
-        #       mass: 6484381.8406485915
+        #       mass: 12903872.54270045 # [kg]
+        #       moments_of_inertia: [2.30055768e9, 2.30055768e9, 2.07541098e9] # Jxx, Jyy, Jzz [kg*m^2]
         #       cost: 0.0
         #       cm_offset: [0.0,0.0,0.0]
-        #       moments_of_inertia: [57626164.73158741,57626164.73158741,739674692.4249477] # Jxx, Jyy, Jzz [kg*m^2]
 
     mooring:
         nodes:
@@ -1339,6 +1343,32 @@ materials:
       alpha: 0.0
       unit_cost: 1.0
       orth: 0.0
+   -  name: concrete_conv_c50 # TODO: define
+      description: Concrete for the tower and monopile C50/60
+      source: wp2/task2.2/Data_collection/Data_collection.xlsx, (tabs= TLP substructure, BoM - different scen.), https://www.beamdimensions.com/materials/Concrete/EN_1992-1-1/C50-60/
+      rho: 2481.0
+      orth: 0 # ---- required so supplied defaults
+      E: 37.e9 # 37 GPa
+      nu: 0.16 # ---- 
+      alpha: 10.0 # 1/C deg = 1/K
+      G: 16.e9 # 16 GPa
+    #   GIc: 0
+    #   GIIc: 0
+    #   alp0: 0.0
+      Xt: 5.3e6 # 5.3 MPa
+      Xc: 50.e6 # 50 MPa
+      S: 0.45e6
+      Xy: 58.e6 # 58 MPa
+    #   m: 3
+    #   A: 35534648443.719765
+   -  name: water
+      source: https://www.engineeringtoolbox.com/water-density-specific-weight-d_595.html, at 26.7 deg
+      description: Water
+      rho: 1025.0
+      orth: 0 # ---- required so supplied defaults
+      E: 1.0
+      nu: 0.2 # ---- 
+      alpha: 2.57e-4
 
 control:
     min_rotor_speed: 5.000011692174984
