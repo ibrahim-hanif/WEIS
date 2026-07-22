@@ -9,19 +9,19 @@ settings:                   # global Settings #(v) TODO
     XiStart      :   0      # sets initial amplitude of each DOF for all frequencies
     nIter        :   4      # sets how many iterations to perform in Model.solveDynamics()
     
-site: #(v) TODO
+site: #(v) DONE
     water_depth : 265        # [m]      uniform water depth
     rho_water   : 1025.0     # [kg/m^3] water density
     rho_air     : 1.225      # [kg/m^3] air density
     mu_air      : 1.81e-05   #          air dynamic viscosity
     shearExp    : 0.08       #          shear exponent
     
-cases: #(v) TODO: DLC 6.1 for UN
+cases: #(v) TODO
     keys : [wind_speed, wind_heading, turbulence, turbine_status, yaw_misalign, wave_spectrum, wave_period, wave_height, wave_heading  ]
     data :  #   m/s        deg    % or e.g. IIB_NTM    string            deg         string          (s)         (m)         (deg)
         # -  [     0,         0,            0,          operating,          0,        JONSWAP,         12,         6,           0        ]
-        -  [    50.0,         0,            0.12,    parked,          0,        JONSWAP,         15.52,         14.75,           0       ] # DLC 6.1
-        # -  [    10.59,         0,            IC_ETM,    operating,          0,        JONSWAP,         15.52,         14.75,           0       ] # DLC 1.6 ?
+        -  [    50.0,         0,            IC_EWM,    parked,          0,        JONSWAP,         15.52,         14.75,           0       ] # DLC 6.1 for UN
+        # -  [    10.59,         0,            IC_NTM,    operating,          0,        JONSWAP,         15.52,         14.75,           0       ] # DLC 1.6 for UN
     
 
 turbine: #(v) TODO
@@ -32,7 +32,7 @@ turbine: #(v) TODO
     xCG_RNA       :         -7.27     #  [m]        x location of RNA center of mass [m]: xg_blades = -13.0 m, xg_hub = -11.0 m, xg_nac = -4.99 m, xg_yaw = 0.0 m
     hHub          :     152.5       #  [m]        hub height above water line [m] (v) 2.5m added
     #rRNA          :  [0,0, 148.742] #  [m] Can use the position of the RNA reference point (which the RNA yaws about) with respect to the FOWT reference point. If also providing hHub, the z coord be overwritten.
-    Fthrust       :       1500.0E3    #  [N]        temporary thrust force to use
+    Fthrust       :       10.85E6    #  [N]        temporary thrust force to use; (v) def. 1500.0E3
     
     I_drivetrain: 318628138.0   # full rotor + drivetrain inertia as felt on the high-speed shaft
     
@@ -1058,7 +1058,7 @@ turbine: #(v) TODO
         VS_KI: -4588245.18720
     
     
-    tower:  # (could remove some entries that don't apply for the tower) #(v) TODO
+    tower:  # (could remove some entries that don't apply for the tower) #(v) DONE
         dlsMax       :  5.0     # maximum node splitting section amount; can't be 0
     
         name      :  tower                     # [-]    an identifier (no longer has to be number)       
@@ -1088,7 +1088,7 @@ turbine: #(v) TODO
             
 
 
-platform:
+platform: #(v) DONE
 
     min_freq_BEM : 0.03   #  [Hz]  lowest frequency and frequency interval to use in BEM analysis
     dz_BEM       : 3.0    #  [m]   axial discretization panel length target for BEM analysis
@@ -1112,8 +1112,8 @@ platform:
         #   location          : [0, 0, -9.63] #
     # (v) below to match diff wrt `Inputs_Fast_Acciona_UN_V02` t2.3 UN baseline
         - type              : point_inertia
-          mass              : 6484381.8406485915 # [kg]
-          moments_of_inertia: [-57626164.73158741,-57626164.73158741,739674692.4249477, 0, 0, 0] # Jxx, Jyy, Jzz, Jxy, Jxz, Jyz [kg*m^2]
+          mass              : 12903872.54270045 # [kg]
+          moments_of_inertia: [2.30055768e9, 2.30055768e9, 2.07541098e9, 0, 0, 0] # Jxx, Jyy, Jzz, Jxy, Jxz, Jyz [kg*m^2]
           location          : [0, 0, -9.63] #
 
     members: # list of all members
@@ -1126,9 +1126,9 @@ platform:
         gamma     :  0.0                       # [deg]  twist angle about the member's z-axis
         potMod    :  False                      # [bool] Whether to model the member with potential flow (BEM model) plus viscous drag or purely strip theory
         # --- outer shell including hydro---
-        stations  :  [0, 1]                    # [-]    location of stations along axis. Will be normalized such that start value maps to rA and end value to rB
-        d         :  11.27                      # [m]    diameters if circular or side lengths if rectangular (can be pairs)
-        t         :  5.635                      # [m]    wall thicknesses (scalar or list of same length as stations)
+        stations  :  [0.0, 1.0]                    # [-]    location of stations along axis. Will be normalized such that start value maps to rA and end value to rB
+        d         :  [11.27, 11.27]                      # [m]    diameters if circular or side lengths if rectangular (can be pairs)
+        t         :  [1.0, 1.0]                      # [m]    wall thicknesses (scalar or list of same length as stations)
         Cd        :  0.6                       # [-]    transverse drag coefficient       (optional, scalar or list of same length as stations) (v) ---- TODO default used here ----
         Ca        :  0.93                      # [-]    transverse added mass coefficient (optional, scalar or list of same length as stations)
         CdEnd     :  0.6                       # [-]    end axial drag coefficient        (optional, scalar or list of same length as stations)
@@ -1148,9 +1148,9 @@ platform:
         gamma     :  0.0                       # [deg]  twist angle about the member's z-axis
         potMod    :  False                      # [bool] Whether to model the member with potential flow (BEM model) plus viscous drag or purely strip theory
         # --- outer shell including hydro---
-        stations  :  [0, 26]                  # [-]    location of stations along axis. Will be normalized such that start value maps to rA and end value to rB
+        stations  :  [0.0, 1.0]                  # [-]    location of stations along axis. Will be normalized such that start value maps to rA and end value to rB
         d         :  [47.3,47.3]              # [m]    diameters if circular or side lengths if rectangular (can be pairs)
-        t         :  1.0                      # [m]    wall thicknesses (scalar or list of same length as stations) (v) TODO: what should the thickness be?
+        t         :  [1.0, 1.0]                      # [m]    wall thicknesses (scalar or list of same length as stations) (v) TODO: what should the thickness be?
         Cd        :  0.6                       # [-]    transverse drag coefficient       (optional, scalar or list of same length as stations) (v) ---- TODO default used here ----
         Ca        :  0.93                      # [-]    transverse added mass coefficient (optional, scalar or list of same length as stations)
         CdEnd     :  1.0                       # [-]    end axial drag coefficient        (optional, scalar or list of same length as stations) 
@@ -1159,11 +1159,11 @@ platform:
         # --- ballast ---
         # ---- TODO: adjust / tune below until ( Mass, CG, 6x6 interia, hydrostatic restoring ) match the real TLP WAMIT data
         # ---- run model.analyseUnloaded() and compr printed RB props
-        l_fill    :  2.13                       # [m] 6.48 (w/o additional_effects)
-        rho_fill  :  1000                      # [kg/m3]
+        l_fill    :  0.01                       # [m] 2.13 / 26 = 0.082
+        rho_fill  :  1025.0                      # [kg/m3] water
 
 
-mooring: # copied from `VoltunUS-S_example.yaml` and `Inputs_Fast_Acciona_UN_V02` (t2.3, final base case, utsira)
+mooring: # DONE: copied from `VoltunUS-S_example.yaml` and `Inputs_Fast_Acciona_UN_V02` (t2.3, final base case, utsira)
     water_depth: 265                                  # [m]       uniform water depth
     # tol        : 0.05                                 # Optional, tolerance for the equilibrium solver of the mooring system
     points:
@@ -1294,11 +1294,11 @@ mooring: # copied from `VoltunUS-S_example.yaml` and `Inputs_Fast_Acciona_UN_V02
       - name: SteelTendon # API 5L grade pipe X80
         diameter: 0.66040       # nominal line diameter (m)
         mass_density: 880.87989  # Dry Line Linear Density (kg/m) (7850 * 112214*1e-6) <- density * area
-        stiffness: 2.37893e10     # Extensional stiffness (N) (212e9 * 112214*1e-6) <- E (modulus) * area
+        stiffness: 2.37893E10     # Extensional stiffness (N) (212e9 * 112214*1e-6) <- E (modulus) * area
         transverse_drag: 1.2    # Cdn (normal drag coeff)
         tangential_drag: 0.08   # Cdt (tangential drag coeff)
-        # breaking_load:    1e8   # ---- from volturnUS, TODO ----
-        # cost: 100.0
+        breaking_load: 70134.E3 # min line break tension (N) (625*1e6 * 112214*1e-6) <- (min tensile str) * area
+        cost: 3.8
         # transverse_added_mass: 1.0
         # tangential_added_mass: 0.0
         
