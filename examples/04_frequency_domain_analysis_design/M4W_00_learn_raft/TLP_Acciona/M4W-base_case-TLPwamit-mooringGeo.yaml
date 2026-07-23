@@ -1096,7 +1096,7 @@ turbine: #(v) TODO
         # (neglecting axial coefficients for now)
         CdEnd     :  0.0                       # [-]    end axial drag coefficient        (optional, scalar or list of same length as stations)
         CaEnd     :  0.0                       # [-]    end axial added mass coefficient  (optional, scalar or list of same length as stations)
-        rho_shell :  7850                      # [kg/m3]   material density
+        rho_shell :  7800                      # [kg/m3]   material density, steel
             
 
 
