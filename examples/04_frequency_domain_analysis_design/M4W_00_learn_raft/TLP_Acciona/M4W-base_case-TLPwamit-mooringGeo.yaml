@@ -25,16 +25,28 @@ cases: #(v) TODO
     
 
 turbine: #(v) TODO
-    
-    mRNA          :     1001505.907   #  [kg]       RNA mass: m_blades = 3*68076.969 = 204230.907 kg (from ED.sum), m_yawbearing = 100000 kg, m_hub = 190000 kg, m_nacelle = (v) def: 507275 kg, iea15mw_report: 530888 || mRNA: def = 1001505.907; iea15mw = 1025118.607
+    # ---- mRNA
+    # 1. default
+    # mRNA          :     1001505.907   #  [kg]       RNA mass: m_blades = 3*68076.969 = 204230.907 kg (from ED.sum), m_yawbearing = 100000 kg, m_hub = 190000 kg, m_nacelle = 507275 kg; mRNA = 1001505.907
+    # 2. m4w base case from acciona
+    mRNA          :     992900        # [kg]        m_blade = 65250, (yaw, hub same as above), m_nacelle = 507300; mRNA = 992900
+    # ----
     IxRNA         :          0        #  [kg-m2]    RNA moment of inertia about local x axis (assumed to be identical to rotor axis for now, as approx) [kg-m^2]
     IrRNA         :          0        #  [kg-m2]    RNA moment of inertia about local y or z axes [kg-m^2]
-    xCG_RNA       :         -7.27     #  [m]        x location of RNA center of mass [m]: xg_blades = -13.0 m, xg_hub = -11.0 m, xg_nac = -4.99 m, xg_yaw = 0.0 m
+    # ---- xCG_RNA
+    # 1. default
+    # xCG_RNA       :         -7.27     #  [m]        x location of RNA center of mass [m]: xg_blades = -13.0 m, xg_hub = -11.0 m, xg_nac = -4.99 m, xg_yaw = 0.0 m
+    # 2. m4w base case from acciona 
+    xCG_RNA       :         -7.663     #  [m]        x location of RNA center of mass [m]: xg_blades_hub = -12.726 m, xg_nac = -5.326 m, xg_yaw = 0.0 m
+    # ----
     hHub          :     152.5       #  [m]        hub height above water line [m] (v) 2.5m added
     #rRNA          :  [0,0, 148.742] #  [m] Can use the position of the RNA reference point (which the RNA yaws about) with respect to the FOWT reference point. If also providing hHub, the z coord be overwritten.
     Fthrust       :       10.85E6    #  [N]        temporary thrust force to use; (v) def. 1500.0E3
-    
-    I_drivetrain: 318628138.0   # full rotor + drivetrain inertia as felt on the high-speed shaft
+    # ---- I_drivetrain
+    # 1. default
+    # I_drivetrain: 318628138.0   # full rotor + drivetrain inertia as felt on the high-speed shaft
+    # 2. m4w base case from acciona 
+    I_drivetrain: 318500000.0   # full rotor + drivetrain inertia as felt on the high-speed shaft
     
     nBlades     : 3          # number of blades
     Zhub        : 152.5      # hub height [m] (v) 2.5m added
