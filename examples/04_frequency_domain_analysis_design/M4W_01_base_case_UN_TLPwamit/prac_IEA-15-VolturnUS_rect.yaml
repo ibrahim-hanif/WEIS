@@ -3,11 +3,11 @@ name: IEA 15MW Offshore Reference Turbine, with taped chord tip design
 comments: copy of iea-15-240-volturnUS_S-rectangle; TODO- for m4w UN site?
 assembly:
     turbine_class: I
-    turbulence_class: B
+    turbulence_class: C
     drivetrain: direct_drive
     rotor_orientation: Upwind
     number_of_blades: 3
-    hub_height: 150.0
+    hub_height: 152.5 # TODO: add 2.5m (+ tower, floating_platform)
     rotor_diameter: 241.94
     rated_power: 15000000.0
     lifetime: 25.0
@@ -648,7 +648,7 @@ components:
         outer_shape:
             outer_diameter:
                 grid: [0.0, 0.10047454902385111, 0.20094909804770222, 0.30142364707155334, 0.40189819609540445, 0.5023727451192556, 0.6028472941431067, 0.7033218431669578, 0.8037963921908089, 0.90427094121466, 1.0]
-                values: [10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 6.5]
+                values: [ 10,  9.964,  9.967,  9.927,  9.528,  9.149,  8.945,  8.735,  8.405,  7.321,  6.5 ]
             cd:
                 grid: [0.0, 1.0]
                 values: [0.5, 0.5]
@@ -659,7 +659,7 @@ components:
                   material: steel
                   thickness:
                       grid: [0.0, 0.10047454902385111, 0.20094909804770222, 0.30142364707155334, 0.40189819609540445, 0.5023727451192556, 0.6028472941431067, 0.7033218431669578, 0.8037963921908089, 0.90427094121466, 1.0]
-                      values: [0.09, 0.0870568244887821, 0.06969791129654272, 0.06659467020278927, 0.048969783194233195, 0.04562355995431616, 0.028128174258004363, 0.025616868141627953, 0.009881156462835017, 0.009941082963793929, 0.005931142626464429]
+                      values: [ 0.082954,  0.082954,  0.083073,  0.082799,  0.0299,  0.027842,  0.025567,  0.022854,  0.02025,  0.018339,  0.021211 ]
         reference_axis:
             x:
                 grid: [0.0, 0.10047454902385111, 0.20094909804770222, 0.30142364707155334, 0.40189819609540445, 0.5023727451192556, 0.6028472941431067, 0.7033218431669578, 0.8037963921908089, 0.90427094121466, 1.0]
@@ -669,7 +669,7 @@ components:
                 values: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
             z:
                 grid: [0.0, 0.10047454902385111, 0.20094909804770222, 0.30142364707155334, 0.40189819609540445, 0.5023727451192556, 0.6028472941431067, 0.7033218431669578, 0.8037963921908089, 0.90427094121466, 1.0]
-                values: [15.0, 28.0, 41.0, 54.0, 67.0, 80.0, 93.0, 106.0, 119.0, 132.0, 144.386]
+                values: [ 17.5, 30.5, 43.5, 56.5, 69.5, 82.5, 95.5, 108.5, 121.5, 134.5, 147.082]
     
     floating_platform:
         transition_piece_mass: 100000.0
@@ -679,7 +679,7 @@ components:
            -  name: conc_shaft_keel
               location: [0.0, 0.0, 2.0]
            -  name: conc_shaft_freeboard
-              location: [0.0, 0.0, 15.0] # TODO: 17.5
+              location: [0.0, 0.0, 17.5] # TODO: 17.5
               transition: true
            # hull
            -  name: proxy_hull_keel
@@ -739,19 +739,19 @@ components:
                   shape: circular
                   outer_diameter:
                       grid: [0.0, 1.0]
-                      values: [11.27, 11.27] # TODO: 11.27
+                      values: [11.27, 11.27] # DONE: 11.27
               structure:
                   layers:
                      -  name: main_twall
-                        material: steel # TODO: change to concrete_conv_c50
+                        material: concrete_conv_c50 # DONE: change to concrete_conv_c50 from steel
                         thickness:
                             grid: [0.0, 1.0]
-                            values: [1.0, 1.0] # TODO: 5.635
-                #   bulkhead:
-                #       material: steel
-                #       thickness:
-                #           grid: [0.0, 1.0]
-                #           values: [0.05, 0.05]
+                            values: [1.0, 1.0] # DONE: 1.0
+                  bulkhead:
+                      material: steel
+                      thickness:
+                          grid: [0.0, 1.0]
+                          values: [0.0, 0.0]
 
            -  name: proxy_hull
               joint1: proxy_hull_keel
@@ -759,11 +759,11 @@ components:
               Ca: 0.6
               Cd: 0.93
               outer_shape: &id003
-                #   shape: circular # TODO: disable
+                #   shape: circular # DONE: disable
                 #   outer_diameter:
                 #       grid: [0.0, 1.0]
                 #       values: [47.3, 47.3]
-                  shape: rectangular # TODO: enable
+                  shape: rectangular # DONE: enable
                   side_length_a:
                       grid: [0.0, 1.0]
                       values: [47.3,47.3]
@@ -773,7 +773,7 @@ components:
               structure: &id004
                   layers:
                      -  name: col_twall
-                        material: steel
+                        material: concrete_conv_c50 # DONE: change to concrete_conv_c50 from steel
                         thickness:
                             grid: [0.0, 1.0]
                             values: [1.0, 1.0]
@@ -781,21 +781,21 @@ components:
                       material: steel
                       thickness:
                           grid: [0.0, 1.0] #[0.0, 0.05, 0.2, 1.0]
-                          values: [0.05, 0.05] #[0.05, 0.05, 0.05, 0.05]
+                          values: [0.0, 0.0] #[0.05, 0.05, 0.05, 0.05]
                 #   ballast:
                 #      -  variable_flag: false
                 #         material: water # slurry
                 #         volume: 546881.985 #169.333333
-                #         grid: [0.0, 0.01]
+                #         grid: [0.0, 1.0]
                     #  -  variable_flag: true
-                    #     grid: [0.05, 0.2]
+                    #     grid: [0.0, 1.0] #[0.05, 0.2]
         
-        # rigid_bodies: # TODO
-        #    -  joint1: platform_cg
-        #       mass: 12903872.54270045 # [kg]
-        #       moments_of_inertia: [2.30055768e9, 2.30055768e9, 2.07541098e9] # Jxx, Jyy, Jzz [kg*m^2]
-        #       cost: 0.0
-        #       cm_offset: [0.0,0.0,0.0]
+        rigid_bodies: # TODO
+           -  joint1: platform_cg
+              mass: 12903872.54270045 # [kg]
+              moments_of_inertia: [2.30055768e9, 2.30055768e9, 2.07541098e9] # Jxx, Jyy, Jzz [kg*m^2]
+              cost: 0.0
+              cm_offset: [0.0,0.0,0.0]
 
     mooring:
         nodes:
