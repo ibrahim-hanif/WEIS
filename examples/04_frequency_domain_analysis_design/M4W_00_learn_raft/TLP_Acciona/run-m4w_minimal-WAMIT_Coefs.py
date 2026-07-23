@@ -30,12 +30,14 @@ print(" Equivalent TLP hull side length for same WPA = ", equi_sq_len)
 #%%
 # analysis flags
 flag_flex_tower = False # False for rigid tower
-if flag_flex_tower: str_case = 'raft_flex_tower'
-else: str_case = 'raft'
 
-flag_m4w_wt = False
+flag_m4w_wt = True
 
 flag_save_csv = False
+
+if flag_flex_tower: str_case = 'raft_flex_tower'
+elif flag_m4w_wt: str_case = 'weis'
+else: str_case = 'raft'
 
 # saved data in base_case_verification.csv
 df = pd.read_csv('base_case_verification.csv')
