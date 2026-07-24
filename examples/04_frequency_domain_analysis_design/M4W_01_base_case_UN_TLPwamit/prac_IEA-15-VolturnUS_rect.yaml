@@ -726,8 +726,8 @@ components:
               location: [ 23.30, -20.77, -265.0 ]
 
            # platform cg
-           -  name: platform_cg
-              location: [0.0, 0.0, -9.63]
+           -  name: pt_inertia
+              location: [0, 0, -10.2]
 
         members:
            -  name: conc_shaft
@@ -785,15 +785,15 @@ components:
                 #   ballast:
                 #      -  variable_flag: false
                 #         material: water # slurry
-                #         volume: 546881.985 #169.333333
-                #         grid: [0.0, 1.0]
+                #         volume: 533.5434 #169.333333
+                #         grid: [0.0, 0.01]
                     #  -  variable_flag: true
                     #     grid: [0.0, 1.0] #[0.05, 0.2]
         
         rigid_bodies: # TODO
-           -  joint1: platform_cg
-              mass: 12903872.54270045 # [kg]
-              moments_of_inertia: [2.30055768e9, 2.30055768e9, 2.07541098e9] # Jxx, Jyy, Jzz [kg*m^2]
+           -  joint1: pt_inertia
+              mass: 13450754.52770045 # [kg]
+              moments_of_inertia: [2.50944742e9, 2.50944742e9, 2.26245282e9] # Jxx, Jyy, Jzz [kg*m^2]
               cost: 0.0
               cm_offset: [0.0,0.0,0.0]
 
