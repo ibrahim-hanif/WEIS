@@ -31,7 +31,7 @@ print(" Equivalent TLP hull side length for same WPA = ", equi_sq_len)
 # analysis flags
 flag_flex_tower = False # False for rigid tower
 
-flag_m4w_wt = True
+flag_m4w_wt = False
 
 flag_save_csv = False
 
