@@ -1124,9 +1124,9 @@ platform: #(v) DONE
         #   location          : [0, 0, -9.63] #
     # (v) below to match diff wrt `Inputs_Fast_Acciona_UN_V02` t2.3 UN baseline
         - type              : point_inertia
-          mass              : 14691488.8 # [kg]
-          moments_of_inertia: [3.03475268e9, 3.03475268e9, 2.29547896e9, 0, 0, 0] # Jxx, Jyy, Jzz, Jxy, Jxz, Jyz [kg*m^2]
-          location          : [0, 0, -8.5] #
+          mass              : 13450754.52770045 # [kg]
+          moments_of_inertia: [2.50944742e9, 2.50944742e9, 2.26245282e9, 0, 0, 0] # Jxx, Jyy, Jzz, Jxy, Jxz, Jyz [kg*m^2]
+          location          : [0, 0, -10.2] #
 
     members: # list of all members
 
@@ -1140,7 +1140,7 @@ platform: #(v) DONE
         # --- outer shell including hydro---
         stations  :  [0.0, 1.0]                    # [-]    location of stations along axis. Will be normalized such that start value maps to rA and end value to rB
         d         :  [11.27, 11.27]                      # [m]    diameters if circular or side lengths if rectangular (can be pairs)
-        t         :  [0.0, 0.0]                      # [m]    wall thicknesses (scalar or list of same length as stations)
+        t         :  [1.0, 1.0]                      # [m]    wall thicknesses (scalar or list of same length as stations)
         Cd        :  0.6                       # [-]    transverse drag coefficient       (optional, scalar or list of same length as stations) (v) ---- TODO default used here ----
         Ca        :  0.93                      # [-]    transverse added mass coefficient (optional, scalar or list of same length as stations)
         CdEnd     :  0.6                       # [-]    end axial drag coefficient        (optional, scalar or list of same length as stations)
