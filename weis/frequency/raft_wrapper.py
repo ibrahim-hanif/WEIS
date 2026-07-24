@@ -30,7 +30,9 @@ class RAFT_WEIS(om.Group):
         raft_opt['n_cases'] = weis_opt['DLC_driver']['n_cases']
         raft_opt['floating'] = weis_opt['floating']  # Give RAFT all the WEIS floating options
         raft_opt['potential_model_override'] = weis_opt['General']['potential_flow_modeling']['bem_method']
-
+        if 'potSecOrder' in weis_opt['RAFT']: #(v) ----
+            raft_opt['potSecOrder'] = weis_opt['RAFT']['potSecOrder']
+        else: raft_opt['potSecOrder'] = 0 # ----
 
         turbine_opt = {}
         turbine_opt['npts'] = weis_opt['WISDEM']['TowerSE']['n_height_tower']
