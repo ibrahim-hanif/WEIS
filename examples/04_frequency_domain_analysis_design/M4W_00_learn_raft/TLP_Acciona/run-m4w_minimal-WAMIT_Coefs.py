@@ -35,6 +35,8 @@ flag_m4w_wt = False
 
 flag_save_csv = False
 
+flag_save_plot = False
+
 if flag_flex_tower: str_case = 'raft_flex_tower'
 elif flag_m4w_wt: str_case = 'weis'
 else: str_case = 'raft'
@@ -192,11 +194,12 @@ plt.show()
 # Visualize the system in its most recently evaluated mean offset position
 wd = 265 # water depth
 
-model.plot(
-    xbounds=[-wd,wd], ybounds=[-wd,wd],zbounds=[-wd,wd],
+model.plot(figsize=(4,4),
+    xbounds=[-wd,wd], ybounds=[-wd,wd],zbounds=[-wd,wd], # TODO: comment for 'raft_tlp'
     plot_water=True,plot_frame=True
 )
 # model.plot(plot_frame=True) # flag plot_frame is used to plot the structural nodes and rigid links that are part of the structure. The default is False
+if flag_save_plot: plt.savefig('raft_tlp.png') # "raft_fowt" or "raft_tlp"
 plt.show()
 
 #%%[markdown]
