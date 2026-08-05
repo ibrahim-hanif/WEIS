@@ -960,6 +960,11 @@ components:
             uptower: true
         generator:
             length: 2.15
+            # radius: 5.309
+            # mass: 368839.0
+            # rpm_efficiency:
+            #   grid: [4.0, 8.0]
+            #   values: [0.957, 0.957]
 
 airfoils:
    -  name: circular
