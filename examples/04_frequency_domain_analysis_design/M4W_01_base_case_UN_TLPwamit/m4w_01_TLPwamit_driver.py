@@ -1,6 +1,8 @@
 #%%[markdown]
 # TODO:
-# 1. how to incl point_inertia (as in raft yaml), cf. omdao_raft.py, line 145
+# 1. DONE: how to incl point_inertia (as in raft yaml)
+# 2. DONE: final weis geo yaml matching raft
+# 3. TODO: DLCs in the modeling options
 
 #%%
 import os
@@ -8,7 +10,7 @@ from weis import weis_main
 from wisdem.inputs.validation import load_yaml
 #%%
 # TEST_RUN will reduce the number and duration of simulations
-TEST_RUN = True # TODO
+TEST_RUN = False # TODO
 flag_GBO = False # TODO
 
 wt_m4w = False # turbine to analyse: True = m4w / False = iea15mw
