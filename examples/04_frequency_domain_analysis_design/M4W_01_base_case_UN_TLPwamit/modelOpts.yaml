@@ -67,8 +67,8 @@ Environment:
     soil_shear_modulus: 140.e+6
     soil_poisson: 0.4
     water_depth: 265.0
-    significant_wave_height: 8.384 # NTM DLC 5.1 at highest wind speed (from sima)
-    significant_wave_period: 10.113 # same as above
+    significant_wave_height: 5.677337581 # NTM DLC 1.1 at highest wind speed (from sima)
+    significant_wave_period: 10.10683304 # same as above
 
 
 OpenFAST: # Options for WEIS fidelity level 3 = nonlinear time domain
@@ -144,17 +144,18 @@ ROSCO:
     ptfm_freq: 0.2
     Kp_float: -10
     
-DLC_driver:
+DLC_driver: # cf. DLC_driver_UN tab in 'Data_collection.xlsx' t2.2 M4W
     metocean_conditions:
-        wind_speed: [4., 6., 8., 10., 12., 14., 16., 18., 20., 22., 24.]
-        wave_height_NSS: [0.83, 0.88, 0.94, 1.03, 1.16, 1.34, 1.57, 1.86, 2.22, 2.62, 3.07]
-        wave_period_NSS: [6.9, 6.96, 7.02, 7.12, 7.25, 7.43, 7.66, 7.94, 8.27, 8.63, 9.01]
-        wave_height_SSS: [6.3, 8, 8, 8.1, 8.5, 8.5, 9.8, 9.8, 9.8, 9.8, 9.9]
-        wave_period_SSS: [11.5, 12.7, 12.7, 12.8, 13.1, 13.1, 14.1, 14.1, 14.1, 14.1, 14.1]
+        wind_speed: [3., 5., 7., 9., 11., 13., 15., 17., 19., 21., 23., 25.]
+        probability: [0.0928436282693377, 0.123038397328881, 0.134902615470228, 0.132548692264885, 0.126769616026711, 0.107629382303839, 0.0868113522537562, 0.0657874234835837, 0.0452365052865887, 0.0269143016138007, 0.0136533110740122, 0.00658875904284919]
+        wave_height_NSS: [1.095572819, 1.220625035, 1.415138377, 1.681675603, 1.993105273, 2.351544078, 2.751817919, 3.208826082, 3.714757371, 4.316738164, 4.945074636, 5.677337581]
+        wave_period_NSS: [8.884861269, 8.831190352, 8.769524379, 8.596799367, 8.42389646, 8.390697515, 8.467953254, 8.647618748, 8.900882084, 9.292181713, 9.657305555, 10.10683304]
+        wave_height_SSS: [1.095572819, 1.220625035, 1.415138377, 1.681675603, 1.993105273, 2.351544078, 2.751817919, 3.208826082, 3.714757371, 4.316738164, 4.945074636, 5.677337581] # TODO
+        wave_period_SSS: [8.884861269, 8.831190352, 8.769524379, 8.596799367, 8.42389646, 8.390697515, 8.467953254, 8.647618748, 8.900882084, 9.292181713, 9.657305555, 10.10683304] # TODO
         wave_height1: 9.6 # from UN publication ----
-        wave_period1: 11.25
+        wave_period1: 11.25 # ----
         wave_height50: 14.75 # m
-        wave_period50: 15.52 # s ----
+        wave_period50: 15.52 # s
     DLCs: # TODO
         # - DLC: "1.1"
         #   n_seeds: 1
@@ -171,6 +172,7 @@ DLC_driver:
         #   analysis_time: 1.
         #   transient_time: 0.
         - DLC: "6.1"
+          wind_speed: [50.0] # TODO
           n_seeds: 1
           analysis_time: 1.
           transient_time: 0.
