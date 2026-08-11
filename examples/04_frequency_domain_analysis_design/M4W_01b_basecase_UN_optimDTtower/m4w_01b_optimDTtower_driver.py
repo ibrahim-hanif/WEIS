@@ -10,32 +10,40 @@ import numpy as np
 from weis import weis_main
 from wisdem.inputs.validation import load_yaml
 #%%
-# TEST_RUN will reduce the number and duration of simulations
-TEST_RUN = False # TODO
-flag_GBO = False # TODO
+# Define MDAO flags
+TEST_RUN = False # TEST_RUN will reduce the number and duration of simulations
 
-wt_innovative = False # turbine to analyse: True = new optim / False = base case
+flag_GBO = True # To perform optimization (True) or not (False)
+
+wt_optim = True # turbine to analyse: True = new optim / False = base case
 
 #%%
 ## File management
 run_dir = os.path.dirname( os.path.abspath(__file__) )
 basecase_dir = os.path.join( run_dir, os.path.pardir, "M4W_01_base_case_UN_TLPwamit" )
-# -- geometry
-if wt_innovative:
-    geo_input = "geometryOpt.yaml"
-    
-
-else: # base case
-    geo_input = "prac_IEA-15-VolturnUS_rect.yaml" 
-    fname_wt_input = os.path.join(basecase_dir, geo_input)
 
 # -- modelling
 fname_modeling_options = os.path.join(run_dir, "modelOpts.yaml")
+
 # -- analysis
+analysisOpt = os.path.join(run_dir, "analysisOpt.yaml")
+analysisNOopt = os.path.join(run_dir, "analysisNOOpt.yaml")
+
 if flag_GBO:
-    fname_analysis_options = os.path.join(run_dir, "analysisOpt.yaml")
+    fname_analysis_options = analysisOpt
 else:
-    fname_analysis_options = os.path.join(run_dir, "analysisNOopt.yaml")
+    fname_analysis_options = analysisNOopt
+
+# -- geometry
+if wt_optim:
+    dict_modelOpts = load_yaml(analysisOpt)
+    fname_wt_input = os.path.join(
+        dict_modelOpts['general']['folder_output'],
+        dict_modelOpts['general']['fname_output']
+    ) + ".yaml"
+else: # base case
+    geo_input = "prac_IEA-15-VolturnUS_rect.yaml" 
+    fname_wt_input = os.path.join(basecase_dir, geo_input)
 
 #%%
 # run WEIS
@@ -87,6 +95,7 @@ print("\n--- obj: masses ---")
 # print(f"MSA mass: {wt_opt["drivese.msa_mass"]}")
 print(f"nacelle mass: {wt_opt["drivese.nacelle_mass"]}")
 print(f"nacelle cm: {wt_opt["drivese.nacelle_cm"]}")
+print(f"tower mass: {wt_opt["towerse.tower_mass"]}")
 
 print("\n--- RNA properties ---")
 print(f"RNA mass: {wt_opt["drivese.rna_mass"]}")
