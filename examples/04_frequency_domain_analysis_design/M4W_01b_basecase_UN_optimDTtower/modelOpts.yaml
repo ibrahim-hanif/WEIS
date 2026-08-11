@@ -158,20 +158,20 @@ DLC_driver: # cf. DLC_driver_UN tab in 'Data_collection.xlsx' t2.2 M4W
         wave_height50: 14.75 # m
         wave_period50: 15.52 # s
     DLCs: # TODO
-        # - DLC: "1.1"
-        #   n_seeds: 1
-        #   analysis_time: 1.
-        #   transient_time: 0.
+        - DLC: "1.1"
+          n_seeds: 1
+          analysis_time: 1.
+          transient_time: 0.
         # - DLC: "1.4"
         #   analysis_time: 1.
         #   transient_time: 0.
         # - DLC: "1.5"
         #   analysis_time: 1.
         #   transient_time: 0.
-        # - DLC: "1.6"
-        #   n_seeds: 1
-        #   analysis_time: 1.
-        #   transient_time: 0.
+        - DLC: "1.6"
+          n_seeds: 1
+          analysis_time: 1.
+          transient_time: 0.
         - DLC: "6.1"
           wind_speed: [50.0] # TODO
           n_seeds: 1
