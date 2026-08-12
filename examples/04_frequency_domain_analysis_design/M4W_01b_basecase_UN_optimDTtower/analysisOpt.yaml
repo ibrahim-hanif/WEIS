@@ -105,7 +105,7 @@ constraints:
         shell_buckling:
             flag: True
         d_to_t: # slenderness ratio controls the global buckling (critical)
-            flag: True #False
+            flag: True
             lower_bound: 120.0 # 90.0, 120
             upper_bound: 1000.0 # 500.0, 1000
         taper:
@@ -118,33 +118,42 @@ constraints:
         frequency:
             flag: False # always for just tower
         frequency_1:
-            flag: False #True TODO 2
+            flag: False # TODO 2
             # stiff-stiff (cf. iea15mw semi sub report); tower freqs (tab 8):
             # - fore aft: 0.496
             # - side side: 0.483
             lower_bound: 0.45
 
-    floating: # TODO
+    floating: # TODO 1
         Max_Offset: #(v) Maximum combined surge/sway offset
             flag: False
             max: 30.0 # TODO our val; this copied from umaine script
         max_surge: # dist, as fraction of water depth
-            flag: False # TODO 1
+            flag: False
             upper_bound: 0.3 # 0.2-0.3 * water_depth(=265) m
         mooring_tension: # keep below its breaking point
-            flag: False # TODO 1
+            flag: False # NOTE: not converging, constr = floatingse.constr_axial_load': array([20.4915959])
+        
+    control: # TODO 1
+        nacelle_acceleration: # Maximum nacelle accelleration over all cases
+            flag: False
+        Max_TwrBsMyt: # Maximum tower base moment over all cases
+            flag: False   
 
 merit_figure_user: # TODO
     name: "towerse.turbine_mass" # = rna_mass + tower_mass
     ref: 1e7
     max_flag: False
+    # name: "financese.lcoe"
+    # ref: 1e-1
+    # max_flag: False
 
 driver:
     optimization:
         flag: True
         solver: SLSQP       # Optimization solver. Options: 'SLSQP' - 'CONMIN' - 'LN_COBYLA'
         tol: 1e-2           # Convergence tolerance (SLSQP); 1e-4
-        max_iter: 50         # Max number of iters (SLSQP); TODO: DT req 80        
+        max_iter: 10         # Max number of iters (SLSQP); TODO: DT req 80        
         # step_size: 1.e-6    # Step size for finite differencing (def.: 1.e-3)
         # form: forward       # Finite differencing mode, forward or central (def.)
         debug_print: True
