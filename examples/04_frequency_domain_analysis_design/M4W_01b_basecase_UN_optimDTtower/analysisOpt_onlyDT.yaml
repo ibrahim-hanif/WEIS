@@ -1,0 +1,159 @@
+general:
+    folder_output: outputs/optim
+    fname_output: onlyDT_results
+
+design_variables:
+    drivetrain: # NOTE: Direct-drive
+        # ---- LSS ----
+        distance_hub_mb:
+            flag: True
+            lower_bound: 0.1
+            upper_bound: 5.0
+        distance_mb_mb:
+            flag: True
+            lower_bound: 0.1
+            upper_bound: 8.0
+        lss_diameter:
+            flag: True
+            lower_bound: 0.5
+            upper_bound: 6.0
+        lss_wall_thickness:
+            flag: True
+            lower_bound: 4e-3
+            upper_bound: 1.0
+        # ---- nose ----
+        nose_diameter:
+            flag: True
+            lower_bound: 0.5
+            upper_bound: 6.0
+        nose_wall_thickness:
+            flag: True
+            lower_bound: 4e-3
+            upper_bound: 1.0
+        # ---- bedplate ----
+        bedplate_wall_thickness:
+            flag: True
+            lower_bound: 4e-3
+            upper_bound: 1.0
+
+    tower:                          
+        outer_diameter:
+            flag: False
+            lower_bound: 6.5
+            upper_bound: 10.0
+        layer_thickness:            # ---- keep these fixed (15,100)mm
+            flag: False
+            lower_bound: 15e-3
+            upper_bound: 1e-1
+
+constraints:
+    drivetrain:
+        # ---- LSS ----
+        lss: # von mises
+            flag: True
+        mb1: # deflection
+            flag: True
+        mb2:
+            flag: True
+        shaft_deflection:
+            flag: True
+            upper_bound: 1e-4
+        shaft_angle:
+            flag: True
+            upper_bound: 1e-3
+        # ---- bedplate ----
+        bedplate:
+            flag: True
+        stator_angle:
+            flag: True
+            upper_bound: 1e-1
+        stator_deflection:
+            flag: False # TODO last iff needed
+            upper_bound: 1e-2
+        # ---- overall nacelle ----
+        height:
+            flag: True
+        length:
+            flag: True
+        ecc:
+            flag: True
+        access:
+            flag: True
+
+    #(v) ---- TODO! MB FLS constraints ----
+    # user:
+    #     - name: "drivese.constr_Lh1_MB1fw"
+    #       lower_bound: [0.0]
+    #     #   ref: 1e1
+    #     - name: "drivese.constr_L12_MBsFW"
+    #       lower_bound: [0.0]
+    #     #   ref: 1e0
+    #     - name: "drivese.constr_L10_mb1" # ---- MB FLS only when mb_e > 0.0 in geometry yaml file ----
+    #       lower_bound: [1.0]
+    #     - name: "drivese.constr_L10_mb2"
+    #       lower_bound: [1.0]
+
+    tower:
+        height_constraint:
+            flag: False # TODO? 1.not in latest iea15 wisdem float-tower optim, 2.output in csv=5.614=H_drive
+            lower_bound: 1.e-2
+            upper_bound: 1.e-2
+        stress:
+            flag: False
+        global_buckling:
+            flag: False
+        shell_buckling:
+            flag: False
+        d_to_t: # slenderness ratio controls the global buckling (critical)
+            flag: False
+            lower_bound: 120.0 # 90.0, 120
+            upper_bound: 1000.0 # 500.0, 1000
+        taper:
+            flag: False
+            lower_bound: 0.4
+        slope:
+            flag: False
+        thickness_slope:
+            flag: False
+        frequency:
+            flag: False # always for just tower
+        frequency_1:
+            flag: False # TODO 2
+            # stiff-stiff (cf. iea15mw semi sub report); tower freqs (tab 8):
+            # - fore aft: 0.496
+            # - side side: 0.483
+            lower_bound: 0.45
+
+    floating: # TODO 1
+        Max_Offset: #(v) Maximum combined surge/sway offset
+            flag: False
+            max: 30.0 # TODO our val; this copied from umaine script
+        max_surge: # dist, as fraction of water depth
+            flag: False
+            upper_bound: 0.3 # 0.2-0.3 * water_depth(=265) m
+        mooring_tension: # keep below its breaking point
+            flag: False # NOTE: not converging, constr = floatingse.constr_axial_load': array([20.4915959])
+        
+    control: # TODO 1
+        nacelle_acceleration: # Maximum nacelle accelleration over all cases
+            flag: False
+        Max_TwrBsMyt: # Maximum tower base moment over all cases
+            flag: False   
+
+merit_figure_user: # TODO
+    name: "drivese.nacelle_mass"
+    ref: 1e6
+    max_flag: False
+    # name: "financese.lcoe"
+    # ref: 1e-1
+    # max_flag: False
+
+driver:
+    optimization:
+        flag: True
+        solver: SLSQP       # Optimization solver. Options: 'SLSQP' - 'CONMIN' - 'LN_COBYLA'
+        tol: 1e-2           # Convergence tolerance (SLSQP); 1e-4
+        max_iter: 10         # Max number of iters (SLSQP); TODO: DT req 80        
+        # step_size: 1.e-6    # Step size for finite differencing (def.: 1.e-3)
+        # form: forward       # Finite differencing mode, forward or central (def.)
+        debug_print: True

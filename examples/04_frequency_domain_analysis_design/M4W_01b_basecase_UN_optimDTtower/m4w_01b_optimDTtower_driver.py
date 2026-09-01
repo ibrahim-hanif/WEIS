@@ -15,7 +15,9 @@ TEST_RUN = False # TEST_RUN will reduce the number and duration of simulations
 
 flag_GBO = True # To perform optimization (True) or not (False)
 
-wt_optim = True # turbine to analyse: True = new optim / False = base case
+flag_opt_onlyDT = True
+
+wt_optim = False # turbine to analyse: True = new optim / False = base case
 
 #%%
 ## File management
@@ -28,15 +30,19 @@ fname_modeling_options = os.path.join(run_dir, "modelOpts.yaml")
 # -- analysis
 analysisOpt = os.path.join(run_dir, "analysisOpt.yaml")
 analysisNOopt = os.path.join(run_dir, "analysisNOOpt.yaml")
+analysisOpt_onlyDT = os.path.join(run_dir, "analysisOpt_onlyDT.yaml")
 
 if flag_GBO:
     fname_analysis_options = analysisOpt
+
+    if flag_opt_onlyDT:
+        fname_analysis_options = analysisOpt_onlyDT
 else:
     fname_analysis_options = analysisNOopt
 
 # -- geometry
 if wt_optim:
-    dict_modelOpts = load_yaml(analysisOpt)
+    dict_modelOpts = load_yaml( fname_analysis_options )
     fname_wt_input = os.path.join(
         dict_modelOpts['general']['folder_output'],
         dict_modelOpts['general']['fname_output']
