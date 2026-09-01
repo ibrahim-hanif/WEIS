@@ -23,7 +23,7 @@ wt_optim = False # turbine to analyse: True = new optim / False = base case
 
 flag_save_results = False
 
-flag_load_results_csv = True
+flag_load_results_csv = False # runWEIS or not, for new analysis
 
 flag_save_plots = False
 
@@ -31,10 +31,13 @@ flag_save_plots = False
 ## File management
 run_dir = os.path.dirname( os.path.abspath(__file__) )
 basecase_dir = os.path.join( run_dir, os.path.pardir, "M4W_01_base_case_UN_TLPwamit" )
+optimDTtower_dir = os.path.join( run_dir, os.path.pardir, "M4W_01b_basecase_UN_optimDTtower" )
 
 # -- geometry
-geo_input = "prac_IEA-15-VolturnUS_rect.yaml" 
-fname_wt_input = os.path.join(basecase_dir, geo_input)
+geo_basecase = "prac_IEA-15-VolturnUS_rect.yaml"
+# fname_wt_input = os.path.join(basecase_dir, geo_basecase)
+geo_optimDT = "outputs\\optim\\onlyDT_results.yaml"
+fname_wt_input = os.path.join(optimDTtower_dir, geo_optimDT)
 
 # -- modelling
 fname_modeling_options = os.path.join(run_dir, "modelOpts.yaml")
