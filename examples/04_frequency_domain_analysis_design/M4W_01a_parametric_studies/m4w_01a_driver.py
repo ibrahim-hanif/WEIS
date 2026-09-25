@@ -25,7 +25,6 @@ def array_eval( value ):
 # plot options
 from Drive4Wind.post_processing.color_schemes import plot_rcParams_update, loc_clr_scheme_m4w, read_color_scheme
 clrs_m4w = read_color_scheme( loc_clr_scheme_m4w )
-plt.rcParams.update( plot_rcParams_update )
 
 #%%
 # Define MDAO flags
@@ -252,6 +251,24 @@ if False: #flag_save_plots:
 # show
 fig_DTconstrs
 
+# %%
+# Tendon tensions
+
+str_Tmoor = 'raft.stats_Tmoor_max'
+
+csv_iea15 = os.path.join( run_dir, lst_output_folder[0] )
+
+df_iea15 = pd.read_csv(csv_iea15)
+
+dict_iea15 = var_df2dict( df_iea15 )
+
+val_Tmoor = np.asarray( eval(
+                str( dict_iea15[ str_Tmoor ] )
+                ), dtype=float
+            )
+val_Tmoor_tendon1_dlc61 = val_Tmoor[-1,1:3]
+print(f" Tendon 1 (DLC 6.1) max tension: {val_Tmoor_tendon1_dlc61} N")
+
 #%%
 # Define input-output files
 
@@ -262,11 +279,14 @@ lst_variables = [
 
   "floatingse.structural_frequencies",
 
+  "drivese.nacelle_mass",
+  "drivese.nacelle_cm",
+
   "drivese.base_F",
   "drivese.base_M",
 
-  "drivese.nacelle_mass",
-  "drivese.nacelle_cm",
+  "towerse.tower.turbine_F",
+  "towerse.tower.turbine_M",
 
   "raft.rigid_body_periods",
 
@@ -282,9 +302,14 @@ lst_variables = [
   "raft.stats_AxRNA_max"
 ]
 
+# -- Tendon-1 anchor tensions
+tendon_index = 0
+str_max_Tmoor_1_anchor = "raft.max_Tmoor_1_anchor"
+
 # output init
 outputs_dict = {}
 outputs_dict["name"] = []
+outputs_dict[ str_max_Tmoor_1_anchor ] = []
 
 #%%
 # loop
@@ -305,6 +330,20 @@ for i, csv_dir in enumerate(lst_output_folder):
     if var not in outputs_dict.keys(): outputs_dict[ var ] = []
     outputs_dict[ var ].append( dict_vals[ var ] )
 
+    # Tendon-tension
+    # = 1-tendon's anchor
+    # = extr DLC 6.1 vals
+    # = 0 deg yaw misalign
+    if "Tmoor" in var:
+        stats_Tmoor_max = np.asarray( eval(
+                str( dict_vals[ var ] )
+                ), dtype=float
+            )
+        val_Tmoor_tendon1_dlc61 = float(
+            stats_Tmoor_max[-2,tendon_index]
+        )   
+        outputs_dict[ str_max_Tmoor_1_anchor ].append(val_Tmoor_tendon1_dlc61)
+
 #%%
 outputs_df = pd.DataFrame( outputs_dict )
 
@@ -318,6 +357,18 @@ if flag_load_results_csv:
 #%%
 # # Plotting
 # options
+
+# plt.rcParams.update( plot_rcParams_update )
+linewidth = 3
+params_plot_rc = {
+        "font.size": 24,
+        "axes.labelsize": 24,
+        "legend.fontsize": 24, # 16 for pdf of `var_with_iter` plot
+        "lines.linewidth": linewidth,
+        "lines.markersize": 10, #linewidth*3,
+    }
+plt.rcParams.update( params_plot_rc )
+
 labels_compr=[
         "Reference",
         "-50% Nac. mass",
@@ -330,9 +381,9 @@ clrs_compr=[
     ]
 
 # %%[markdown]
-# ### Plot tower base loads comparison
+# ### Plot drivetrain-base & tower base loads comparison
 #%%
-def plot_tower_base_loads(
+def plot_bars_force_moment_loads(
         csv_path,
         var_force="drivese.base_F",
         var_moment="drivese.base_M",
@@ -343,7 +394,7 @@ def plot_tower_base_loads(
         show_percent=False,
         reference_index=0,
         percent_decimals=1,
-        loc_save_img=None):
+        title="Tower-Top Loads Comparison"):
     """
     Plot tower-base force and moment components for multiple designs.
 
@@ -353,13 +404,15 @@ def plot_tower_base_loads(
 
     Required columns:
         name
-        drivese.base_F
-        drivese.base_M
+        either:
+        - `drivese.base_F` and `drivese.base_M` = drivetrain-base or tower-top force.
+        or
+        - `towerse.tower.turbine_F` and `towerse.tower.turbine_M` = tower-base or floater-top.
 
-    drivese.base_F expected as:
+    `drivese.base_F` expected as:
         [[Fx], [Fy], [Fz]]
 
-    drivese.base_M expected as:
+    `drivese.base_M` expected as:
         [[Mx], [My], [Mz]]
 
     Parameters
@@ -676,17 +729,19 @@ def plot_tower_base_loads(
     # Overall figure
     # ============================================================
 
-    fig.suptitle(
-        "Tower-base Loads Comparison"
-    )
+    if title is not None:
+        fig.suptitle(title)
 
     fig.tight_layout()
 
     return fig, axs, F, M
 
 #%%
-fig, axs, F, M = plot_tower_base_loads(
+# Drivetrain-base or tower-top loads
+fig, axs, F, M = plot_bars_force_moment_loads(
     csv_path=csv_all_results,
+    var_force="drivese.base_F",
+    var_moment="drivese.base_M",
 
     design_labels=labels_compr,
 
@@ -696,7 +751,36 @@ fig, axs, F, M = plot_tower_base_loads(
 
     figsize=(17,7),
     show_percent=True,
-    percent_decimals=1
+    percent_decimals=0,
+    title="Tower-Top Loads Comparison"
+)
+
+# save
+if False: #flag_save_plots:
+    path_twrTopLoads_compr = os.path.join(
+        run_dir, "outputs\\compr_twrTopLoads.png")
+    fig.savefig(
+        path_twrTopLoads_compr,
+        bbox_inches="tight",
+        dpi=300 )
+
+#%%
+# Tower-base loads
+fig, axs, F, M = plot_bars_force_moment_loads(
+    csv_path=csv_all_results,
+    var_force="towerse.tower.turbine_F",
+    var_moment="towerse.tower.turbine_M",
+
+    design_labels=labels_compr,
+
+    reference_index=0,
+
+    colors= clrs_compr,
+
+    figsize=(17,7),
+    show_percent=True,
+    percent_decimals=0,
+    title="Tower-Base Loads Comparison"
 )
 
 # save
@@ -707,8 +791,6 @@ if False: #flag_save_plots:
         path_twrBaseLoads_compr,
         bbox_inches="tight",
         dpi=300 )
-
-plt.show()
 
 #%%
 # ============================================================
@@ -1126,8 +1208,9 @@ lst_vars_max = [
     ("raft.Max_Offset",       r"$x_{max}$",           "[m]"),
     ("raft.heave_avg",        r"$z_{avg}$",           "[m]"),
     ("raft.Max_PtfmPitch",    r"$\theta_{max}$",      "[deg]"),
-    ("raft.max_nac_accel",    r"$a^{nac}_{max}$",     "[m/s/s]"),
-    ("raft.max_tower_base",   r"$M^{TwrBase}_{max}$",   "[Nm]"),
+    ("raft.max_nac_accel",    r"$a^{max}_{nac}$",     "[m/s/s]"),
+    ("raft.max_tower_base",   r"$M^{max}_{TwrBase}$",   "[Nm]"),
+    (str_max_Tmoor_1_anchor,  r"$T_{1,anchor}^{max}$", "[N]")
 ]
 
 
@@ -1142,7 +1225,7 @@ fig, axs, values, differences = (
         colors=clrs_compr,
 
         show_percent=True,
-        percent_decimals=1,
+        percent_decimals=2,
         figsize=(16,9),
         title="Maximum Response Comparison"
     )
@@ -1506,6 +1589,7 @@ fig, axs, values_RBM, differences_RBM = (
         colors=clrs_compr,
 
         show_percent=True,
+        percent_decimals=1,
         title="Natural Periods of Rigid Body Modes Comparison"
     )
 )
@@ -1533,6 +1617,7 @@ def plot_comparison_windspeed_series_from_csv(
         design_labels=None,
         colors=None,
         diff_colors=None,
+        markers=None,
         figsize=None,
         reference_index=0,
         title="Wind-Speed Response Comparison"):
@@ -1618,6 +1703,11 @@ def plot_comparison_windspeed_series_from_csv(
     # Use same colors on difference plots by default
     if diff_colors is None:
         diff_colors = colors
+
+    # ========
+    # Markers
+    # ========
+    if markers is None: markers = ["o"] * n_designs
 
     # ========================================================
     # Helper: parse array from CSV
@@ -1768,10 +1858,10 @@ def plot_comparison_windspeed_series_from_csv(
             ax_val.plot(
                 x,
                 values[i],
-                "-o",
                 # linewidth=2,
                 color=colors[i],
-                label=design_labels[i]
+                label=design_labels[i],
+                marker=markers[i],
             )
 
         ax_val.set_title(label)
@@ -1801,9 +1891,9 @@ def plot_comparison_windspeed_series_from_csv(
             ax_diff.plot(
                 x,
                 differences[i],
-                "-o",
                 # linewidth=2,
                 color=diff_colors[i],
+                marker=markers[i],
                 label=design_labels[i]
             )
 
@@ -1921,7 +2011,12 @@ fig, axs, values_WS, differences_WS = (
 
         figsize=(16, 12),
         design_labels=labels_compr,
-        colors=["black", "tab:blue", "tab:red"],
+        colors=[
+            "black",
+            "tab:blue",
+            "tab:red"
+        ],
+        markers=[ "o", "v", "^"],
         title="Maximum Response vs. Wind-Speed Comparison"
     )
 )
@@ -1936,24 +2031,6 @@ if False: #flag_save_plots:
     )
 
 # %%
-# Tendon tensions
-
-str_Tmoor = 'raft.stats_Tmoor_max'
-
-csv_iea15 = os.path.join( run_dir, lst_output_folder[0] )
-
-df_iea15 = pd.read_csv(csv_iea15)
-
-dict_iea15 = var_df2dict( df_iea15 )
-
-val_Tmoor = np.asarray( eval(
-                str( dict_iea15[ str_Tmoor ] )
-                ), dtype=float
-            )
-val_Tmoor_tendon1_dlc61 = val_Tmoor[-1,1:3]
-print(f" Tendon 1 (DLC 6.1) max tension: {val_Tmoor_tendon1_dlc61} N")
-
-# %%
 def plot_comparison_Tmoor_windspeed_from_csv(
         csv_path,
         var="raft.stats_Tmoor_max",
@@ -1963,6 +2040,7 @@ def plot_comparison_Tmoor_windspeed_from_csv(
         name_col="name",
         design_labels=None,
         colors=None,
+        markers=None,
         figsize=(14, 5),
         reference_index=0,
         title=None):
@@ -2031,6 +2109,11 @@ def plot_comparison_Tmoor_windspeed_from_csv(
             f"{n_designs} designs found but only "
             f"{len(colors)} colors supplied."
         )
+
+    # ========
+    # Markers
+    # ========
+    if markers is None: markers = ["o"] * n_designs
 
     # ========================================================
     # Parse 2D array
@@ -2164,10 +2247,10 @@ def plot_comparison_Tmoor_windspeed_from_csv(
         ax_val.plot(
             x,
             values[i],
-            "-o",
-            linewidth=2,
+            # linewidth=2,
             color=colors[i],
-            label=design_labels[i]
+            label=design_labels[i],
+            marker=markers[i],
         )
 
     # ax_val.set_title( f"Tendon {tendon_index + 1} Maximum Tension" )
@@ -2200,10 +2283,10 @@ def plot_comparison_Tmoor_windspeed_from_csv(
         ax_diff.plot(
             x,
             differences[i],
-            "-o",
-            linewidth=2,
+            # linewidth=2,
             color=colors[i],
-            label=design_labels[i]
+            label=design_labels[i],
+            marker=markers[i],
         )
 
     ax_diff.axhline(
@@ -2289,13 +2372,14 @@ fig, axs, Tmoor_DLC11, diff_DLC11 = (
             "tab:blue",
             "tab:red"
         ],
+        markers=[ "o", "v", "^"],
         title = f"Tendon {tendon_index+1} Maximum Tensions (DLC 1.1)"
     )
 )
 
 if False: #flag_save_plots:
     path_compr_TmoorMax = os.path.join(
-        run_dir, "outputs\\compr_TmoorMax_with_WS.pdf")
+        run_dir, f"outputs\\compr_Tmoor_{tendon_index+1}_max_with_WS.png")
     fig.savefig(
         path_compr_TmoorMax,
         bbox_inches="tight",
