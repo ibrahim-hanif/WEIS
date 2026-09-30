@@ -36,7 +36,7 @@ override = "more" # valid = "" or "more" or "less" ; % change in Nac mass for pa
 
 flag_save_results = False
 
-flag_load_results_csv = False # runWEIS or not, for new analysis
+flag_load_results_csv = True # runWEIS or not, for new analysis
 
 flag_save_plots = False
 
@@ -77,13 +77,14 @@ lst_output_folder = [
   "outputs\\iea15_UN_50more\\results.csv",   # 50 % higher Nac weight
 ]
 
+# base case csv
+csv_iea15 = os.path.join( run_dir, lst_output_folder[0] )
+df_iea15 = pd.read_csv(csv_iea15)
+dict_iea15 = var_df2dict( df_iea15 )
+
 # extract reference nacelle and generator masses
-gen_mass_ref = eval(var_df2dict(
-        pd.read_csv(lst_output_folder[0])
-    )["drivese.generator_mass"])
-nacelle_mass_ref = eval(var_df2dict(
-        pd.read_csv(lst_output_folder[0])
-    )["drivese.nacelle_mass"])
+gen_mass_ref = eval( dict_iea15["drivese.generator_mass"] )
+nacelle_mass_ref = eval( dict_iea15["drivese.nacelle_mass"] )
 ratio_gen_to_nacelle = (gen_mass_ref / nacelle_mass_ref)
 print(
  f"mass_gen / mass_nacelle (ref. iea15mw UN): {ratio_gen_to_nacelle:.2f}"
@@ -166,10 +167,10 @@ if not flag_load_results_csv:
   rpm_rated = wt_opt['drivese.rated_rpm'][0]
   freq_range_1P = np.array( [rpm_min, rpm_rated] )/60
   freq_range_3P = 3* freq_range_1P
-  print("1P (blade period) freq ranges:")
-  print(" ", freq_range_1P, " Hz" )
-  print("3P (blade passing) freq ranges:")
-  print(" ", freq_range_3P, " Hz \n" )
+  print("1P (blade period) ranges:")
+  print(" - freqs ", freq_range_1P, " Hz | Periods ", 1/freq_range_1P, " s." )
+  print("3P (blade passing) ranges:")
+  print(" - freqs ", freq_range_3P, " Hz | Periods ", 1/freq_range_3P, " s.\n" )
   freq_tower = wt_opt["towerse.tower.structural_frequencies"] # towerse.tower OR floatingse.structural_frequencies
   print("Tower fore-aft/side-side freq range:")
   print(" ", freq_tower[0:2], " Hz" )
@@ -249,18 +250,12 @@ if False: #flag_save_plots:
     fig_DTconstrs.savefig( path_plot_dt_constr )
 
 # show
-fig_DTconstrs
+# fig_DTconstrs
 
 # %%
 # Tendon tensions
 
 str_Tmoor = 'raft.stats_Tmoor_max'
-
-csv_iea15 = os.path.join( run_dir, lst_output_folder[0] )
-
-df_iea15 = pd.read_csv(csv_iea15)
-
-dict_iea15 = var_df2dict( df_iea15 )
 
 val_Tmoor = np.asarray( eval(
                 str( dict_iea15[ str_Tmoor ] )
@@ -277,8 +272,6 @@ lst_variables = [
   "drivese.F_aero_hub",
   "drivese.M_aero_hub",
 
-  "floatingse.structural_frequencies",
-
   "drivese.nacelle_mass",
   "drivese.nacelle_cm",
 
@@ -287,6 +280,10 @@ lst_variables = [
 
   "towerse.tower.turbine_F",
   "towerse.tower.turbine_M",
+
+  "towerse.tower.f1",
+  "towerse.tower.f2",
+  "floatingse.structural_frequencies",
 
   "raft.rigid_body_periods",
 
@@ -1225,7 +1222,7 @@ fig, axs, values, differences = (
         colors=clrs_compr,
 
         show_percent=True,
-        percent_decimals=2,
+        percent_decimals=1,
         figsize=(16,9),
         title="Maximum Response Comparison"
     )
@@ -1604,6 +1601,522 @@ if False: #flag_save_plots:
     )
 
 plt.show()
+
+#%%[markdown]
+# ### Plot spectra of excitation (1P, 3P), RBMs, tower bending modes (1.,2.)
+#%%
+def plot_period_spectra_from_csv(
+        csv_path,
+        rpm_min,
+        rpm_rated,
+        name_col="name",
+        design_labels=None,
+        colors=None,
+        markers=None,
+        figsize=(14, 7),
+        show_rbm=("surge", "sway", "heave", "roll", "pitch", "yaw"),
+        show_tower_modes=True,
+        logscale=True,
+        title="Rigid-Body and Structural Period Placement"):
+
+    df = pd.read_csv(csv_path)
+
+    n_designs = len(df)
+
+    if n_designs < 1:
+        raise ValueError("CSV contains no design rows.")
+
+    # ========================================================
+    # Design labels
+    # ========================================================
+
+    if design_labels is None:
+
+        if name_col in df.columns:
+            design_labels = df[name_col].astype(str).tolist()
+
+        else:
+            design_labels = [
+                f"Design {i + 1}"
+                for i in range(n_designs)
+            ]
+
+    if len(design_labels) != n_designs:
+        raise ValueError(
+            "Number of design_labels must equal "
+            "number of CSV rows/designs."
+        )
+
+    # ========================================================
+    # Colors
+    # ========================================================
+
+    if colors is None:
+
+        cmap = plt.get_cmap("tab10")
+
+        colors = [
+            cmap(i % 10)
+            for i in range(n_designs)
+        ]
+
+    elif len(colors) < n_designs:
+
+        raise ValueError(
+            f"{n_designs} designs found but only "
+            f"{len(colors)} colors supplied."
+        )
+
+    # ========
+    # Markers
+    # ========
+    if markers is None: markers = ["o"] * n_designs
+
+    # ========================================================
+    # Helper
+    # ========================================================
+
+    def parse_array(value):
+
+        arr = np.asarray(
+            ast.literal_eval(str(value)),
+            dtype=float
+        )
+
+        return arr.squeeze().flatten()
+
+    # ========================================================
+    # Rotor excitation frequencies
+    # ========================================================
+
+    freq_range_1P = (
+        np.array(
+            [rpm_min, rpm_rated],
+            dtype=float
+        )
+        / 60.0
+    )
+
+    freq_range_3P = (
+        3.0 * freq_range_1P
+    )
+
+    # ========================================================
+    # Convert excitation ranges from frequency -> period
+    #
+    # Important:
+    # frequency increases with rpm,
+    # therefore period decreases.
+    #
+    # Sort afterwards so [min period, max period]
+    # ========================================================
+
+    period_range_1P = np.sort(
+        1.0 / freq_range_1P
+    )
+
+    period_range_3P = np.sort(
+        1.0 / freq_range_3P
+    )
+
+    # ========================================================
+    # Rigid-body modes
+    # ========================================================
+
+    rbm_names = [
+        "surge",
+        "sway",
+        "heave",
+        "roll",
+        "pitch",
+        "yaw"
+    ]
+
+    rbm_labels = {
+        "surge": r"Surge ($x$)",
+        "sway":  r"Sway ($y$)",
+        "heave": r"Heave ($z$)",
+        "roll":  r"Roll ($\phi$)",
+        "pitch": r"Pitch ($\theta$)",
+        "yaw":   r"Yaw ($\psi$)"
+    }
+
+    # ========================================================
+    # Extract periods
+    # ========================================================
+
+    rbm_periods = {}
+    tower_periods = {}
+
+    for i in range(n_designs):
+
+        design = design_labels[i]
+
+        # ----------------------------------------------------
+        # Rigid-body periods are already stored as periods
+        # ----------------------------------------------------
+
+        periods = parse_array(
+            df.iloc[i]["raft.rigid_body_periods"]
+        )
+
+        if len(periods) != 6:
+            raise ValueError(
+                "raft.rigid_body_periods must contain "
+                "6 rigid-body periods."
+            )
+
+        rbm_periods[design] = dict(
+            zip(
+                rbm_names,
+                periods
+            )
+        )
+
+        # ----------------------------------------------------
+        # Tower frequency -> tower period
+        # ----------------------------------------------------
+
+        if show_tower_modes:
+
+            f1 = float(
+                df.iloc[i]["towerse.tower.f1"]
+            )
+
+            f2 = float(
+                df.iloc[i]["towerse.tower.f2"]
+            )
+
+            tower_periods[design] = {
+                "tower_T1": 1.0 / f1,
+                "tower_T2": 1.0 / f2
+            }
+
+    # ========================================================
+    # Figure
+    # ========================================================
+
+    fig, ax = plt.subplots(
+        1,
+        1,
+        figsize=figsize
+    )
+
+    # ========================================================
+    # 1P / 3P period ranges
+    # ========================================================
+
+    ax.axvspan(
+        period_range_1P[0],
+        period_range_1P[1],
+        color="tab:orange",
+        alpha=0.25,
+        label="1P range"
+    )
+
+    ax.axvspan(
+        period_range_3P[0],
+        period_range_3P[1],
+        color="gold",
+        alpha=0.25,
+        label="3P range"
+    )
+
+    # ========================================================
+    # Vertical positions for modes
+    # ========================================================
+
+    y_rbm = {
+        "surge": 0.25,
+        "sway":  0.35,
+        "heave": 0.45,
+        "roll":  0.55,
+        "pitch": 0.65,
+        "yaw":   0.75
+    }
+
+    y_tower1 = 0.87
+    y_tower2 = 0.96
+
+    # Small offset for different designs
+    design_spacing = 0.018
+
+    # ========================================================
+    # Plot modes for all designs
+    # ========================================================
+
+    for i, design in enumerate(design_labels):
+
+        color = colors[i]
+
+        y_offset = (
+            i - (n_designs - 1) / 2
+        ) * design_spacing
+
+        # ----------------------------------------------------
+        # Rigid-body modes
+        # ----------------------------------------------------
+
+        for mode in show_rbm:
+
+            if mode not in rbm_names:
+                raise ValueError(
+                    f"Unknown rigid-body mode '{mode}'."
+                )
+
+            period = (
+                rbm_periods[design][mode]
+            )
+
+            y = (
+                y_rbm[mode]
+                + y_offset
+            )
+
+            ax.plot(
+                period,
+                y,
+                marker=markers[i],
+                # markersize=7,
+                color=color
+            )
+
+            ax.vlines(
+                period,
+                0.05,
+                y,
+                color=color,
+                alpha=0.50,
+                # linewidth=1.2,
+                linestyle=":"
+            )
+
+            # Label modes only for reference design
+            if i == 0:
+
+                ax.annotate(
+                    rbm_labels[mode],
+                    xy=(period, y),
+                    xytext=(0, 8),
+                    textcoords="offset points",
+                    ha="center",
+                    va="bottom",
+                    # fontsize=9,
+                    rotation=90
+                )
+
+        # ----------------------------------------------------
+        # Tower modes
+        # ----------------------------------------------------
+
+        if show_tower_modes:
+
+            T1 = (
+                tower_periods[design]["tower_T1"]
+            )
+
+            T2 = (
+                tower_periods[design]["tower_T2"]
+            )
+
+            ax.plot(
+                T1,
+                y_tower1 + y_offset,
+                marker="s",
+                # markersize=8,
+                color=color
+            )
+
+            ax.vlines(
+                T1,
+                0.05,
+                y_tower1 + y_offset,
+                color=color,
+                alpha=0.55,
+                # linewidth=1.5,
+                linestyle="--"
+            )
+
+            ax.plot(
+                T2,
+                y_tower2 + y_offset,
+                marker="s",
+                # markersize=8,
+                color=color
+            )
+
+            ax.vlines(
+                T2,
+                0.05,
+                y_tower2 + y_offset,
+                color=color,
+                alpha=0.55,
+                # linewidth=1.5,
+                linestyle="--"
+            )
+
+            # Labels only once
+            if i == 0:
+
+                ax.annotate(
+                    "Tower 1st",
+                    xy=(
+                        T1,
+                        y_tower1 + y_offset
+                    ),
+                    xytext=(0, 8),
+                    textcoords="offset points",
+                    ha="center",
+                    va="bottom",
+                    # fontsize=9
+                )
+
+                ax.annotate(
+                    "Tower 2nd",
+                    xy=(
+                        T2,
+                        y_tower2 + y_offset
+                    ),
+                    xytext=(0, 8),
+                    textcoords="offset points",
+                    ha="center",
+                    va="bottom",
+                    # fontsize=9
+                )
+
+    # ========================================================
+    # Dummy handles for design legend
+    # ========================================================
+
+    for i, design in enumerate(design_labels):
+
+        ax.plot(
+            [],
+            [],
+            # "-o",
+            color=colors[i],
+            marker=markers[i],
+            label=design
+        )
+
+    # ========================================================
+    # Axis formatting
+    # ========================================================
+
+    if logscale:
+        ax.set_xscale("log")
+
+    ax.set_xlabel(
+        "Period [s]"
+    )
+
+    ax.set_ylabel(
+        "Modes"
+    )
+
+    ax.set_yticks([])
+
+    ax.set_ylim(
+        0.0,
+        1.08
+    )
+
+    ax.grid(
+        True,
+        axis="x",
+        which="both",
+        alpha=0.3
+    )
+
+    ax.set_axisbelow(True)
+
+    # ========================================================
+    # Title + legend
+    # ========================================================
+
+    if title is not None:
+
+        fig.suptitle(
+            title,
+            y=0.98
+        )
+
+    handles, labels = (
+        ax.get_legend_handles_labels()
+    )
+
+    unique = dict(
+        zip(labels, handles)
+    )
+
+    fig.legend(
+        unique.values(),
+        unique.keys(),
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.91),
+        ncol=min(len(unique), 5),
+        frameon=True
+    )
+
+    fig.tight_layout(
+        rect=[
+            0.0,
+            0.0,
+            1.0,
+            0.84
+        ]
+    )
+
+    return (
+        fig,
+        ax,
+        rbm_periods,
+        tower_periods,
+        period_range_1P,
+        period_range_3P
+    )
+
+#%%
+fig, ax, rbm_periods, tower_periods, period_1P, period_3P = (
+    plot_period_spectra_from_csv(
+        csv_path=csv_all_results,
+
+        rpm_min=rpm_min,
+        rpm_rated=rpm_rated,
+
+        design_labels=labels_compr,
+
+        colors=[
+            "black",
+            "tab:blue",
+            "tab:red"
+        ],
+        markers=[ "o", "v", "^"],
+        figsize=(16, 6),
+
+        title="Excitation, Rigid-Body and Tower-Bending Period Comparison"
+    )
+)
+
+freq_range_1P = np.array( [rpm_min, rpm_rated] )/60
+freq_range_3P = 3* freq_range_1P
+print("1P (blade period) ranges:")
+print(" - freqs ", freq_range_1P, " Hz | Periods ", 1/freq_range_1P, " s." )
+print("3P (blade passing) ranges:")
+print(" - freqs ", freq_range_3P, " Hz | Periods ", 1/freq_range_3P, " s.\n" )
+
+if False: #flag_save_plots:
+    path_freq = os.path.join(
+        run_dir,
+        "outputs",
+        "compr_natPeriods_to_excitation.png"
+    )
+
+    fig.savefig(
+        path_freq,
+        dpi=300,
+        bbox_inches="tight"
+    )
 
 #%%[markdown]
 # ### Plot changes in stats (dynamics) of variables with wind speed
