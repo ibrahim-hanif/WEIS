@@ -16,6 +16,7 @@ WISDEM:
         spar_cap_ps: Spar_Cap_PS
         te_ss: TE_reinforcement_SS
         te_ps: TE_reinforcement_PS
+        gust_std: 15.0
     TowerSE:
         flag: True
     DriveSE:
