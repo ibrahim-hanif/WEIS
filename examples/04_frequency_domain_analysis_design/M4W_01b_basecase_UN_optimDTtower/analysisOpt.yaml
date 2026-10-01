@@ -1,6 +1,6 @@
 general:
-    folder_output: outputs/optim
-    fname_output: results
+    folder_output: outputs/DTandTower
+    fname_output: optim
 
 design_variables:
     drivetrain: # NOTE: Direct-drive
