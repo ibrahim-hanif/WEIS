@@ -26,9 +26,9 @@ flag_GBO = False # To perform optimization (True) or not (False)
 
 flag_onlyDT = False # NOTE: # 1
 
-flag_onlyTower = True # NOTE: # 2
+flag_onlyTower = False # NOTE: # 2
 
-flag_DTandTower = False # NOTE: # 3 (not for iea15 DD)
+flag_DTandTower = True # NOTE: # 3 (not for iea15 DD)
 
 wt_optim = True # turbine to analyse: True = new optim / False = base case
 
@@ -80,23 +80,42 @@ if not flag_GBO:
     override_analysis["driver"]["optimization"]["flag"] = False
 
 # -- GEOMETRY
-if wt_optim: # optimized
-    loc_yaml_geo_wt_optim = os.path.join(
+
+# ---- last optim
+loc_yaml_geo_wt_optim = os.path.join(
         dict_anaOpts['general']['folder_output'],
         dict_anaOpts['general']['fname_output']
     ) + ".yaml"
-    fname_wt_input = loc_yaml_geo_wt_optim
+# ---- DT optim
+dict_dtOpts = load_yaml( analysisOpt_onlyDT )
+loc_yaml_geo_dt_optim = os.path.join(
+    dict_dtOpts['general']['folder_output'],
+    dict_dtOpts['general']['fname_output']
+) + ".yaml"
+# ---- Tower optim
+dict_wtOpts = load_yaml( analysisOpt_onlyTower )
+loc_yaml_geo_tower_optim = os.path.join(
+    dict_wtOpts['general']['folder_output'],
+    dict_wtOpts['general']['fname_output']
+) + ".yaml"
 
-elif flag_onlyTower: # use optim DT for tower optim
-    dict_dtOpts = load_yaml( analysisOpt_onlyDT )
-    loc_yaml_geo_dt_optim = os.path.join(
-        dict_dtOpts['general']['folder_output'],
-        dict_dtOpts['general']['fname_output']
-    ) + ".yaml"
+# optimized
+if wt_optim:
+    fname_wt_input = loc_yaml_geo_wt_optim
+    print(" -- initial turbine design: saved from last optim")
+
+# use optim DT for tower optim
+elif flag_onlyTower:
     fname_wt_input = loc_yaml_geo_dt_optim
+    print(" -- initial turbine design: saved DT optim")
+
+elif flag_DTandTower: # use basecase for DT+tower optim
+    fname_wt_input = loc_yaml_geo_basecase
+    print(" -- initial turbine design: basecase")
 
 else: # base case
     fname_wt_input = loc_yaml_geo_basecase
+    print(" -- initial turbine design: basecase")
 
 #%%
 # run WEIS
@@ -219,8 +238,11 @@ lst_DTconstrs = [
     "constr_stator_deflection", "constr_stator_angle"]
 fig_DTconstrs, ax_DTconstrs = plot_drivetrain_constraints(
     csv_file,lst_constrs=lst_DTconstrs,flag_WTnamespace=True)
-if flag_GBO:
+
+if True: # TODO
+    fig_DTconstrs.axes[1].patches[0].set_color("tab:green")
     fig_DTconstrs.axes[1].patches[1].set_color("tab:green")
+
 # save
 if False: #flag_save_plots:
     path_plot_dt_constr = os.path.join(
@@ -258,17 +280,10 @@ if False: #flag_save_plots:
 # Tower geometry
 from Drive4Wind.utilities.plot_tower_data import plot_tower_geo_comparison
 
-# optimized tower yaml
-dict_wtOpts = load_yaml( analysisOpt_onlyTower )
-loc_yaml_geo_tower_optim = os.path.join(
-    dict_wtOpts['general']['folder_output'],
-    dict_wtOpts['general']['fname_output']
-) + ".yaml"
-
 fig_TowerGeo, ax_TowerGeo = plot_tower_geo_comparison(
+    loc_yaml_geo_wt_optim,
     loc_yaml_geo_tower_optim,
-    loc_yaml_geo_basecase,
-    m4w_label="Optimized tower", iea_label="Basecase tower",
+    m4w_label="DT+tower", iea_label="Only tower",
     colors=[ "grey", "tab:blue", "darkgreen" ]
 )
 
