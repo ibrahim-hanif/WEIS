@@ -48,7 +48,7 @@ optimDTtower_dir = os.path.join( run_dir, os.path.pardir, "M4W_01b_basecase_UN_o
 
 # -- geometry
 geo_basecase = "prac_IEA-15-VolturnUS_rect.yaml"
-geo_optimDT = "outputs\\optim\\onlyDT_results.yaml"
+geo_optimDT = "outputs\\only_Tower\\optim.yaml"
 if not dt_optim:
     fname_wt_input = os.path.join(basecase_dir, geo_basecase)
 else:
@@ -224,10 +224,24 @@ if not flag_load_results_csv:
 
   print("\n--- Merit figures ---")
   print(f" LCOE [USD/kW/h]: {wt_opt["financese.lcoe"]}")
-  # -----------------------------------------------------------------------
+
+# ======================================================================
 
 # %%[markdown]
-# Post-process
+# # Post-process
+#%%
+# options
+# plt.rcParams.update( plot_rcParams_update )
+linewidth = 3
+params_plot_rc = {
+        "font.size": 24,
+        "axes.labelsize": 24,
+        "legend.fontsize": 24, # 16 for pdf of `var_with_iter` plot
+        "lines.linewidth": linewidth,
+        "lines.markersize": 10, #linewidth*3,
+    }
+plt.rcParams.update( params_plot_rc )
+
 #%%
 from Drive4Wind.utilities.utilities_drivetrain import plot_drivetrain_constraints
 
@@ -353,19 +367,6 @@ if flag_load_results_csv:
 
 #%%
 # # Plotting
-# options
-
-# plt.rcParams.update( plot_rcParams_update )
-linewidth = 3
-params_plot_rc = {
-        "font.size": 24,
-        "axes.labelsize": 24,
-        "legend.fontsize": 24, # 16 for pdf of `var_with_iter` plot
-        "lines.linewidth": linewidth,
-        "lines.markersize": 10, #linewidth*3,
-    }
-plt.rcParams.update( params_plot_rc )
-
 labels_compr=[
         "Reference",
         "-50% Nac. mass",
@@ -2007,7 +2008,7 @@ def plot_period_spectra_from_csv(
         ax.set_xscale("log")
 
     ax.set_xlabel(
-        "Period [s]"
+        "Natural Period [s]"
     )
 
     ax.set_ylabel(
@@ -2868,13 +2869,19 @@ def plot_comparison_Tmoor_windspeed_from_csv(
         differences
     )
 # %%
-tendon_index = 0
+tendon_index = 0 # 0 = tendon 1 ; 3 = tendon 4
+
+DLC = "1.1" # 1.1 or 1.6
+
+if DLC == "1.1": index_start_end=(0, 12)
+elif DLC == "1.6": index_start_end=(12, 24)
+else: ValueError(" --- valid DLC values are 1.1 and 1.6 ;")
 
 fig, axs, Tmoor_DLC11, diff_DLC11 = (
     plot_comparison_Tmoor_windspeed_from_csv(
         csv_path=csv_all_results,
         wind_speeds=wind_speeds,
-        index_start_end=(0, 12), # (0,12) = DLC 1.1; (12,24) = DLC 1.6
+        index_start_end=index_start_end,
         var = "raft.stats_Tmoor_max",
         tendon_index=tendon_index,
         reference_index=0,
@@ -2886,7 +2893,7 @@ fig, axs, Tmoor_DLC11, diff_DLC11 = (
             "tab:red"
         ],
         markers=[ "o", "v", "^"],
-        title = f"Tendon {tendon_index+1} Maximum Tensions (DLC 1.1)"
+        title = f"Tendon {tendon_index+1} Maximum Tensions (DLC {DLC})"
     )
 )
 
