@@ -295,9 +295,8 @@ lst_variables = [
   "towerse.tower.turbine_F",
   "towerse.tower.turbine_M",
 
-  "towerse.tower.f1",
-  "towerse.tower.f2",
-  "floatingse.structural_frequencies",
+  "floatingse.f1",
+  "floatingse.f2",
 
   "raft.rigid_body_periods",
 
@@ -1781,11 +1780,11 @@ def plot_period_spectra_from_csv(
         if show_tower_modes:
 
             f1 = float(
-                df.iloc[i]["towerse.tower.f1"]
+                df.iloc[i]["floatingse.f1"]
             )
 
             f2 = float(
-                df.iloc[i]["towerse.tower.f2"]
+                df.iloc[i]["floatingse.f2"]
             )
 
             tower_periods[design] = {
