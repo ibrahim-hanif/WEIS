@@ -115,8 +115,8 @@ constraints:
             flag: True
         thickness_slope:
             flag: True
-        frequency:
-            flag: False # always for just tower
+        frequency: # either frequency or frequency_1
+            flag: True # means: tcons.constr_tower_f_NPmargin AND tcons.constr_tower_f_1Pmargin; constraint on tower freq so ratio of 3P/f AND 1P/f is above or below gamma with constraint <= 0
         frequency_1:
             flag: False # TODO 2
             # stiff-stiff (cf. iea15mw semi sub report); tower freqs (tab 8):
