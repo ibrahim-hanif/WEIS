@@ -22,17 +22,17 @@ from wisdem.inputs.validation import load_yaml
 # Define MDAO flags
 TEST_RUN = False # TEST_RUN will reduce the number and duration of simulations
 
-flag_GBO = False # To perform optimization (True) or not (False)
+flag_GBO = True # To perform optimization (True) or not (False)
 
 flag_onlyDT = False # NOTE: # 1
 
-flag_onlyTower = False # NOTE: # 2
+flag_onlyTower = True # NOTE: # 2
 
-flag_DTandTower = True # NOTE: # 3 (not for iea15 DD)
+flag_DTandTower = False # NOTE: # 3 (not for iea15 DD)
 
 wt_optim = True # turbine to analyse: True = new optim / False = base case
 
-flag_load_results_csv = True
+flag_load_results_csv = False
 
 #%%
 ## File management
@@ -150,10 +150,11 @@ if not flag_load_results_csv:
     print("3P (blade passing) freq ranges:")
     print(" ", freq_range_3P, " Hz \n" )
     freq_tower = wt_opt["towerse.tower.structural_frequencies"] # towerse.tower OR floatingse.structural_frequencies
-    print("Tower fore-aft/side-side freq range:")
+    print("Fore-aft (FA) / side-side (SS) freq ranges:")
+    print("Tower (only):")
     print(" ", freq_tower[0:2], " Hz" )
     freq_floater = wt_opt["floatingse.structural_frequencies"] # towerse.tower OR floatingse.structural_frequencies
-    print("Floater freq range:")
+    print("Floating tower:")
     print(" ", freq_floater[0:2], " Hz \n" )
 
     print("LSS desvars:")
@@ -280,11 +281,32 @@ if False: #flag_save_plots:
 # Tower geometry
 from Drive4Wind.utilities.plot_tower_data import plot_tower_geo_comparison
 
+# ---- geo yaml and labels
+if flag_onlyTower:
+    optim_yaml = loc_yaml_geo_tower_optim
+    ref_yaml = loc_yaml_geo_dt_optim
+    optim_label = "Optimized tower"
+    ref_label = "Basecase tower"
+
+elif flag_DTandTower:
+    optim_yaml = loc_yaml_geo_wt_optim
+    ref_yaml = loc_yaml_geo_tower_optim
+    optim_label = "DT+tower"
+    ref_label = "Only tower"
+
+else:
+    optim_yaml = loc_yaml_geo_basecase
+    ref_yaml = loc_yaml_geo_basecase
+    optim_label = "Basecase tower"
+    ref_label = "Basecase tower"
+
+# ----
+
 fig_TowerGeo, ax_TowerGeo = plot_tower_geo_comparison(
-    loc_yaml_geo_wt_optim,
-    loc_yaml_geo_tower_optim,
-    m4w_label="DT+tower", iea_label="Only tower",
-    colors=[ "grey", "tab:blue", "darkgreen" ]
+    optim_yaml,
+    ref_yaml,
+    m4w_label=optim_label, iea_label=ref_label,
+    colors=[ "k", "tab:blue", "darkgreen" ]
 )
 
 fig_TowerGeo.set_size_inches([13,8])
@@ -293,6 +315,7 @@ for iplot in range(2):
     for iline in range(3):
         ax_TowerGeo[ iplot ].lines[ iline ].set_linewidth( linewidth )
         if iline != 0: ax_TowerGeo[ iplot ].lines[ iline ].set_marker(".")
+        if iline == 1: ax_TowerGeo[ iplot ].lines[ iline ].set_linestyle("--")
 #
 ax_TowerGeo[0].legend()
 ax_TowerGeo[0].legend_.set_bbox_to_anchor((0.9, 0.35))
