@@ -27,20 +27,21 @@ case_dict = {
     "basecase":     "M4W_01b_basecase_UN_optimDTtower",
     "innovative":   "M4W_01c_innovative_UN_optimDTtower"
 }
-case_loc = case_dict["basecase"] # TODO: select "basecase" or "innovative"
+case_user = "innovative" # TODO: select "basecase" or "innovative"
+case_loc = case_dict[ case_user ]
 # ----
 
 flag_GBO = False # To perform optimization (True) or not (False)
 
-flag_onlyDT = True # NOTE: # 1
+flag_onlyDT = False # NOTE: # 1
 
 flag_onlyTower = False # NOTE: # 2
 
-flag_DTandTower = False # NOTE: # 3 (not for iea15 DD)
+flag_DTandTower = True # NOTE: # 3 (not for iea15 DD)
 
-wt_optim = False # turbine to analyse: True = new optim / False = base case
+wt_optim = True # turbine to analyse: True = new optim / False = base case
 
-flag_load_results_csv = False
+flag_load_results_csv = True
 
 #%%
 ## File management
@@ -52,6 +53,9 @@ basecase_dir = os.path.join(
 )
 fname_yaml_geo_basecase = "prac_IEA-15-VolturnUS_rect.yaml" 
 loc_yaml_geo_basecase = os.path.join(basecase_dir, fname_yaml_geo_basecase)
+if case_user == "innovative":
+    fname_yaml_geo_innovative = "prac_M4W-15-TLP.yaml"
+    loc_yaml_geo_basecase = os.path.join(run_dir, fname_yaml_geo_innovative)
 
 # --- Overrides
 override_geometry = {}
@@ -122,7 +126,7 @@ elif flag_onlyTower:
     print(" -- initial turbine design: saved DT optim")
 
 elif flag_DTandTower: # use basecase for DT+tower optim
-    fname_wt_input = loc_yaml_geo_basecase
+    fname_wt_input = loc_yaml_geo_tower_optim # loc_yaml_geo_basecase
     print(" -- initial turbine design: basecase")
 
 else: # base case
@@ -143,6 +147,7 @@ if not flag_load_results_csv:
         # test ?
         test_run=TEST_RUN
     )
+    print( f" * driver status: {wt_opt.driver.get_exit_status()}" )
 
 # %%
 # Print the results
@@ -171,8 +176,17 @@ if not flag_load_results_csv:
 
     print("LSS desvars:")
     print(" ", wt_opt["drivese.L_h1"], wt_opt["drivese.L_12"], wt_opt["drivese.lss_diameter"], wt_opt["drivese.lss_wall_thickness"] )
+    if case_user == "innovative":
+        print("HSS desvars:")
+        print(" ", wt_opt["drivese.L_hss"], wt_opt["drivese.hss_diameter"], wt_opt["drivese.hss_wall_thickness"] )
     print("Bedplate wall thickness:")
-    print(" ", wt_opt["drivese.bedplate_wall_thickness"])
+    if case_user == "basecase":
+        print(" ", wt_opt["drivese.bedplate_wall_thickness"])
+    else:
+        print(" ", wt_opt["drivese.bedplate_flange_width"],
+              wt_opt["drivese.bedplate_flange_thickness"],
+              wt_opt["drivese.bedplate_web_thickness"]
+        )
 
     print("\n--- constr_ max ---")
     print("- lss: ", np.max(wt_opt["drivese.constr_lss_vonmises"]) )
@@ -187,9 +201,14 @@ if not flag_load_results_csv:
     print("- constr_hub_diameter:", wt_opt["drivese.constr_hub_diameter"])
     print("- constr_length:", wt_opt["drivese.constr_length"])
     print("- constr_height:", wt_opt["drivese.constr_height"])
-    print("- constr_access:", wt_opt["drivese.constr_access"])
-    print("- constr_ecc:", wt_opt["drivese.constr_ecc"])
+    if case_user == "basecase":
+        print("- constr_access:", wt_opt["drivese.constr_access"])
+        print("- constr_ecc:", wt_opt["drivese.constr_ecc"])
 
+    print("\n--- RNA properties ---")
+    print(f"RNA mass: {wt_opt["drivese.rna_mass"]}")
+    print(f"RNA cm: {wt_opt["drivese.rna_cm"]}")
+    
     print("\nTower-top / drivetrain bedplate base loads:")
     print(" - base_F: ", wt_opt['drivese.base_F'])
     print(" - base_M: ", wt_opt['drivese.base_M'])
@@ -199,10 +218,7 @@ if not flag_load_results_csv:
     print(f"nacelle mass: {wt_opt["drivese.nacelle_mass"]}")
     print(f"nacelle cm: {wt_opt["drivese.nacelle_cm"]}")
     print(f"tower mass: {wt_opt["towerse.tower_mass"]}")
-
-    print("\n--- RNA properties ---")
-    print(f"RNA mass: {wt_opt["drivese.rna_mass"]}")
-    print(f"RNA cm: {wt_opt["drivese.rna_cm"]}")
+    print(f"Turbine mass: {wt_opt["floatingse.turbine_mass"]}")
 
     print("\n--- Dynamic properties (RAFT) ---")
     print(f" Max_Offset [m]: {wt_opt["raft.Max_Offset"]}")
@@ -249,12 +265,17 @@ lst_DTconstrs = [
     "constr_shaft_deflection", "constr_shaft_angle",
     "constr_mb1_defl", "constr_mb2_defl",
     "constr_stator_deflection", "constr_stator_angle"]
+if case_user == "innovative":
+    lst_DTconstrs.append("constr_hss_vonmises")
+
 fig_DTconstrs, ax_DTconstrs = plot_drivetrain_constraints(
     csv_file,lst_constrs=lst_DTconstrs,flag_WTnamespace=True)
 
-if True: # TODO
+if case_user == "basecase": # TODO
     fig_DTconstrs.axes[1].patches[0].set_color("tab:green")
     fig_DTconstrs.axes[1].patches[1].set_color("tab:green")
+else: # innovative
+    fig_DTconstrs.axes[1].patches[4].set_color("tab:green")
 
 # save
 if False: #flag_save_plots:
