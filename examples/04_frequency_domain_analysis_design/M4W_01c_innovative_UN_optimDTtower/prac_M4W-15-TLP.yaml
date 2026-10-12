@@ -932,39 +932,48 @@ components:
            -  name: suction
               type: suction
 
-    drivetrain:
+    drivetrain: # NOTE: initial GD geo (un-optimized)
         outer_shape:
             uptilt: 6.0
             distance_tt_hub: 5.614
+            distance_hub_mb: 0.5
+            distance_mb_mb: 5.0
             overhang: 12.0313
             cd: 0.5
-        gearbox:
-            gear_ratio: 1.0
-            efficiency: 1.0
+        gearbox: # NOTE: fixed during optim; so no change in vals for GB
+            gear_ratio: 49.61325590726571
+            efficiency: 0.992
+            mass: 138728.6451
+            length: 2.7636198183
+            radius: 2.3120240000000005
         lss:
-            diameter: [3.0, 3.0]
+            diameter: [2.5, 2.5]
             wall_thickness: [0.1, 0.1]
             material: steel_drive
-        hss: {}
-        nose:
-            diameter: [2.2, 2.2]
+        hss:
+            length: 1.0
+            diameter: [0.5, 0.5]
             wall_thickness: [0.1, 0.1]
+            material: steel_drive
         bedplate:
-            wall_thickness:
-                grid: [0.0, 1.0]
-                values: [0.05, 0.05]
+            flange_width: 2.0
+            flange_thickness: 0.05
+            web_thickness: 0.05
             material: steel_drive
         other_components:
             mb1Type: CARB
             mb2Type: SRB
+            # mb1_e: 0.4 # TODO: add
+            # mb2_e: 0.4
             uptower: true
-        generator:
-            length: 2.15
-            radius: 5.309
-            mass: 368839.0
+            converter_mass: 5625.0
+        generator: # NOTE: fixed during optim; so no change in vals for Gen
+            mass: 34800.0
+            length: 1.5507360000000001
+            radius: 1.4
             rpm_efficiency:
-              grid: [4.0, 8.0]
-              values: [0.957, 0.957]
+                grid: [0.0, 1.0]
+                values: [0.9805, 0.9805]
 
 airfoils:
    -  name: circular
