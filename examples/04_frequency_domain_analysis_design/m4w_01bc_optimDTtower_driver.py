@@ -22,21 +22,30 @@ from wisdem.inputs.validation import load_yaml
 # Define MDAO flags
 TEST_RUN = False # TEST_RUN will reduce the number and duration of simulations
 
-flag_GBO = True # To perform optimization (True) or not (False)
+# ---- case selection
+case_dict = {
+    "basecase":     "M4W_01b_basecase_UN_optimDTtower",
+    "innovative":   "M4W_01c_innovative_UN_optimDTtower"
+}
+case_loc = case_dict["basecase"] # TODO: select "basecase" or "innovative"
+# ----
 
-flag_onlyDT = False # NOTE: # 1
+flag_GBO = False # To perform optimization (True) or not (False)
 
-flag_onlyTower = True # NOTE: # 2
+flag_onlyDT = True # NOTE: # 1
+
+flag_onlyTower = False # NOTE: # 2
 
 flag_DTandTower = False # NOTE: # 3 (not for iea15 DD)
 
-wt_optim = True # turbine to analyse: True = new optim / False = base case
+wt_optim = False # turbine to analyse: True = new optim / False = base case
 
 flag_load_results_csv = False
 
 #%%
 ## File management
-run_dir = os.path.dirname( os.path.abspath(__file__) )
+main_dir = os.path.dirname( os.path.abspath(__file__) ) 
+run_dir = os.path.join( main_dir, case_loc )
 # --- Base case
 basecase_dir = os.path.join(
     run_dir, os.path.pardir, "M4W_01_base_case_UN_TLPwamit"
@@ -83,18 +92,21 @@ if not flag_GBO:
 
 # ---- last optim
 loc_yaml_geo_wt_optim = os.path.join(
+        case_loc,
         dict_anaOpts['general']['folder_output'],
         dict_anaOpts['general']['fname_output']
     ) + ".yaml"
 # ---- DT optim
 dict_dtOpts = load_yaml( analysisOpt_onlyDT )
 loc_yaml_geo_dt_optim = os.path.join(
+    case_loc,
     dict_dtOpts['general']['folder_output'],
     dict_dtOpts['general']['fname_output']
 ) + ".yaml"
 # ---- Tower optim
 dict_wtOpts = load_yaml( analysisOpt_onlyTower )
 loc_yaml_geo_tower_optim = os.path.join(
+    case_loc,
     dict_wtOpts['general']['folder_output'],
     dict_wtOpts['general']['fname_output']
 ) + ".yaml"
