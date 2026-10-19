@@ -100,6 +100,9 @@ def gen_mass_4_nac_pct_change( percent_change ):
     gen_mass_new = gen_mass_ref * gen_pct_change
     return gen_mass_new
 
+rpm_min = eval(dict_iea15['drivese.minimum_rpm'])
+rpm_rated = eval(dict_iea15['drivese.rated_rpm'])
+
 #%%
 # Override values
 
@@ -372,10 +375,19 @@ labels_compr=[
         "+50% Nac. mass"
     ]
 clrs_compr=[
-    "turquoise",
-    "tab:cyan",
-    "tab:blue"
+    "0.6", #"turquoise",
+    "tab:blue", #"tab:cyan",
+    "tab:red", #"tab:blue"
     ]
+
+RBM_NAMES_SYMB_DICT = {
+    "surge": r"$(x)$",
+    "sway ": r"$(y)$",
+    "heave ": r"$(z)$",
+    "roll ": r"$(\phi)$",
+    "pitch ": r"$(\theta)$",
+    "yaw ": r"$(\psi)$",
+}
 
 # %%[markdown]
 # ### Plot drivetrain-base & tower base loads comparison
@@ -1228,7 +1240,7 @@ fig, axs, values, differences = (
     )
 )
 
-if False: #flag_save_plots:
+if 0: #flag_save_plots:
     path_maxDynamicVariables_compr = os.path.join(
     run_dir, "outputs\\compr_maxDynamicVariables.png")
     fig.savefig(
@@ -1338,14 +1350,7 @@ def plot_comparison_bar_plot_of_1Darray_from_csv(
     all_differences = {}
 
     # Rigid-body modes
-    mode_labels = [
-        "Surge "    + r"$(x)$",
-        "Sway "     + r"$(y)$",
-        "Heave "    + r"$(z)$",
-        "Roll "     + r"$(\phi)$",
-        "Pitch "    + r"$(\theta)$",
-        "Yaw "      +r"$(\psi)$",
-    ]
+    mode_labels = [key + " " + val for key, val in RBM_NAMES_SYMB_DICT.items()]
 
     # ========================================================
     # Process variables
@@ -1534,11 +1539,11 @@ def plot_comparison_bar_plot_of_1Darray_from_csv(
     # Axis titles
     # ========================================================
 
-    axs[0].set_xlabel(
+    axs[0].set_title(
         "Translational Modes"
     )
 
-    axs[1].set_xlabel(
+    axs[1].set_title(
         "Rotational Modes"
     )
 
@@ -1592,8 +1597,8 @@ fig, axs, values_RBM, differences_RBM = (
 )
 
 # Save
-if False: #flag_save_plots:
-    path_compr_RBM = os.path.join( run_dir, "outputs\\compr_RBM.pdf" )
+if 0: #flag_save_plots:
+    path_compr_RBM = os.path.join( run_dir, "outputs\\compr_RBM.png" )
     fig.savefig(
         path_compr_RBM,
         bbox_inches="tight",
@@ -1605,496 +1610,390 @@ plt.show()
 #%%[markdown]
 # ### Plot spectra of excitation (1P, 3P), RBMs, tower bending modes (1.,2.)
 #%%
-def plot_period_spectra_from_csv(
+def spectrum_pierson_moskowitz( f, Hs, Tp ):
+    """
+    reference: sec.6.4.3.2, eq.6.57, Manwell 2024
+    """
+    fp = 1.0 / Tp
+
+    S = (
+        0.3125
+        * (Hs**2)
+        * (fp**4)
+        * np.maximum(f, 1e-6)**(-5)
+        * np.exp(
+            -1.25 * (fp / np.maximum(f,1e-6))**4
+        )
+    )
+
+    return S
+
+def spectrum_jonswap(f, Hs, Tp, gamma=3.3):
+    """
+    reference: sec.6.4.3.3, Manwell 2024
+    """
+
+    def calculate_gamma_from_Hs_Tp(Hs, Tp):
+        """
+        reference: eq.6.59
+        """
+        ratio = Tp / np.sqrt(Hs)
+
+        if ratio <= 3.6:
+            gamma = 5
+        elif ratio < 5:
+            gamma = np.exp( 5.75 - 1.15*ratio )
+        else:
+            gamma = 1
+
+        return gamma
+
+    if gamma == None: gamma = calculate_gamma_from_Hs_Tp(Hs, Tp)
+
+    fp = 1.0 / Tp
+
+    sigma = np.where(
+        f <= fp,
+        0.07,
+        0.09
+    )
+
+    C = 1 - 0.287 * np.log(gamma)
+
+    alpha = np.exp(
+        -(
+            (f - fp)**2
+        ) /
+        (
+            2.0 * (sigma**2) * (fp**2)
+        )
+    )
+
+    S = (
+        C
+        * spectrum_pierson_moskowitz(f,Hs,Tp)
+        * gamma**alpha
+    )
+
+    return S
+
+def spectrum_kaimal(
+        f,
+        U,
+        L=340.0,
+        sigma_u=0.14):
+
+    n = 6.0 * f * L / U
+
+    S = (
+        4 * sigma_u**2 * L / U
+        /
+        (1 + n)**(5.0/3.0)
+    )
+
+    return S
+#%%
+def plot_frequency_placement_with_metocean(
         csv_path,
+        modeling_options_yaml,
         rpm_min,
         rpm_rated,
-        name_col="name",
-        design_labels=None,
-        colors=None,
-        markers=None,
-        figsize=(14, 7),
-        show_rbm=("surge", "sway", "heave", "roll", "pitch", "yaw"),
-        show_tower_modes=True,
-        logscale=True,
-        title="Rigid-Body and Structural Period Placement"):
+        design_labels,
+        colors,
+        markers,
+        figsize=(16, 6),
+        title="Wind, Wave, Excitation and Structural Frequency Comparison",
+        wind_speed_indices=None):
+    
+    import yaml
+    from matplotlib.patches import Patch
+    from matplotlib.lines import Line2D
+
+    # ==================================================
+    # Load CSV and metocean data
+    # ==================================================
 
     df = pd.read_csv(csv_path)
 
-    n_designs = len(df)
+    with open(modeling_options_yaml, "r") as fp:
+        modeling_options = yaml.safe_load(fp)
 
-    if n_designs < 1:
-        raise ValueError("CSV contains no design rows.")
+    metocean = modeling_options["DLC_driver"]["metocean_conditions"]
 
-    # ========================================================
-    # Design labels
-    # ========================================================
+    wind_speeds = np.asarray(metocean["wind_speed"], dtype=float)
+    Hs_all = np.asarray(metocean["wave_height_NSS"], dtype=float)
+    Tp_all = np.asarray(metocean["wave_period_NSS"], dtype=float)
 
-    if design_labels is None:
+    if wind_speed_indices is None:
+        wind_speed_indices = [0, 4, 8, len(wind_speeds) - 1]
 
-        if name_col in df.columns:
-            design_labels = df[name_col].astype(str).tolist()
+    # ==================================================
+    # Frequency grid [Hz]
+    # ==================================================
 
-        else:
-            design_labels = [
-                f"Design {i + 1}"
-                for i in range(n_designs)
-            ]
+    f = np.linspace(0.001, 0.7, 200)
 
-    if len(design_labels) != n_designs:
-        raise ValueError(
-            "Number of design_labels must equal "
-            "number of CSV rows/designs."
+    fig, ax = plt.subplots(figsize=figsize)
+
+    # ==================================================
+    # Wave spectra (selected metocean conditions)
+    # ==================================================
+
+    for idx in wind_speed_indices:
+        Hs, Tp = Hs_all[idx], Tp_all[idx]
+
+        S = spectrum_jonswap(f, Hs, Tp, gamma=None)
+        S /= max(np.max(S), np.finfo(float).eps)
+
+        ax.plot(
+            f, S,
+            color="blue",
+            alpha=0.7,
+            label=f"Wave: Hs={Hs:.1f} m, Tp={Tp:.1f} s"
         )
 
-    # ========================================================
-    # Colors
-    # ========================================================
+    # ==================================================
+    # Wind spectra
+    # ==================================================
 
-    if colors is None:
+    for idx in wind_speed_indices:
+        U = wind_speeds[idx]
 
-        cmap = plt.get_cmap("tab10")
+        S = spectrum_kaimal(f, U)
+        S /= max(np.max(S), np.finfo(float).eps)
 
-        colors = [
-            cmap(i % 10)
-            for i in range(n_designs)
-        ]
-
-    elif len(colors) < n_designs:
-
-        raise ValueError(
-            f"{n_designs} designs found but only "
-            f"{len(colors)} colors supplied."
+        ax.plot(
+            f, S,
+            color="red",
+            alpha=0.7,
+            label=f"Wind: U={U:.0f} m/s"
         )
 
-    # ========
-    # Markers
-    # ========
-    if markers is None: markers = ["o"] * n_designs
+    # ==================================================
+    # 1P / 3P frequency bands [Hz]
+    # ==================================================
 
-    # ========================================================
-    # Helper
-    # ========================================================
+    f_1P = np.sort(np.array([rpm_min, rpm_rated], dtype=float) / 60.0)
+    f_3P = 3.0 * f_1P
+    margin_P = 0.02
 
-    def parse_array(value):
 
-        arr = np.asarray(
-            ast.literal_eval(str(value)),
-            dtype=float
-        )
-
-        return arr.squeeze().flatten()
-
-    # ========================================================
-    # Rotor excitation frequencies
-    # ========================================================
-
-    freq_range_1P = (
-        np.array(
-            [rpm_min, rpm_rated],
-            dtype=float
-        )
-        / 60.0
+    # ========== 1P ==========
+    ax.axvspan(
+        max(0.0, f_1P[0] - margin_P),
+        f_1P[1] + margin_P,
+        color="0.8", zorder=0
+    )
+    ax.axvspan(
+        f_1P[0], f_1P[1],
+        facecolor="none", hatch="//",
+        edgecolor="black", linewidth=0.8, zorder=1
     )
 
-    freq_range_3P = (
-        3.0 * freq_range_1P
+    # ========== 3P ==========
+    ax.axvspan(
+        max(0.0, f_3P[0] - margin_P),
+        f_3P[1] + margin_P,
+        color="0.6", zorder=0
+    )
+    ax.axvspan(
+        f_3P[0], f_3P[1],
+        facecolor="none", hatch="\\\\",
+        edgecolor="black", linewidth=0.8, zorder=1
     )
 
-    # ========================================================
-    # Convert excitation ranges from frequency -> period
-    #
-    # Important:
-    # frequency increases with rpm,
-    # therefore period decreases.
-    #
-    # Sort afterwards so [min period, max period]
-    # ========================================================
+    # ==================================================
+    # Structural frequencies for all designs
+    # ==================================================
 
-    period_range_1P = np.sort(
-        1.0 / freq_range_1P
-    )
+    rbm_names = [name for name in RBM_NAMES_SYMB_DICT.values()]
 
-    period_range_3P = np.sort(
-        1.0 / freq_range_3P
-    )
-
-    # ========================================================
-    # Rigid-body modes
-    # ========================================================
-
-    rbm_names = [
-        "surge",
-        "sway",
-        "heave",
-        "roll",
-        "pitch",
-        "yaw"
-    ]
-
-    rbm_labels = {
-        "surge": r"Surge ($x$)",
-        "sway":  r"Sway ($y$)",
-        "heave": r"Heave ($z$)",
-        "roll":  r"Roll ($\phi$)",
-        "pitch": r"Pitch ($\theta$)",
-        "yaw":   r"Yaw ($\psi$)"
-    }
-
-    # ========================================================
-    # Extract periods
-    # ========================================================
+    rbm_text_pos = np.linspace(0.6,0.98,6)
 
     rbm_periods = {}
     tower_periods = {}
 
-    for i in range(n_designs):
+    for i, design in enumerate(design_labels):
 
-        design = design_labels[i]
+        if design not in df.index:
+            # Design labels are plot labels, not necessarily CSV index values.
+            # Use the row at the same position as a fallback.
+            row = df.iloc[i]
+        else:
+            row = df.loc[design]
 
-        # ----------------------------------------------------
-        # Rigid-body periods are already stored as periods
-        # ----------------------------------------------------
+        color = colors[i]
+        marker = markers[i]
 
-        periods = parse_array(
-            df.iloc[i]["raft.rigid_body_periods"]
-        )
+        # --------------------------------------------------
+        # Rigid-body modes: raft.rigid_body_periods [s]
+        # --------------------------------------------------
+
+        periods = np.asarray(
+            ast.literal_eval(str(row["raft.rigid_body_periods"])),
+            dtype=float
+        ).ravel()
 
         if len(periods) != 6:
             raise ValueError(
-                "raft.rigid_body_periods must contain "
-                "6 rigid-body periods."
+                f"Design {design}: expected 6 RBM periods, got {len(periods)}."
             )
 
-        rbm_periods[design] = dict(
-            zip(
-                rbm_names,
-                periods
-            )
-        )
+        rbm_periods[design] = periods
 
-        # ----------------------------------------------------
-        # Tower frequency -> tower period
-        # ----------------------------------------------------
+        for mode, period, tpos in zip(rbm_names, periods, rbm_text_pos):
+            if not np.isfinite(period) or period <= 0:
+                continue
 
-        if show_tower_modes:
+            ff = 1.0 / period
 
-            f1 = float(
-                df.iloc[i]["floatingse.f1"]
-            )
-
-            f2 = float(
-                df.iloc[i]["floatingse.f2"]
-            )
-
-            tower_periods[design] = {
-                "tower_T1": 1.0 / f1,
-                "tower_T2": 1.0 / f2
-            }
-
-    # ========================================================
-    # Figure
-    # ========================================================
-
-    fig, ax = plt.subplots(
-        1,
-        1,
-        figsize=figsize
-    )
-
-    # ========================================================
-    # 1P / 3P period ranges
-    # ========================================================
-
-    ax.axvspan(
-        period_range_1P[0],
-        period_range_1P[1],
-        color="tab:orange",
-        alpha=0.25,
-        label="1P range"
-    )
-
-    ax.axvspan(
-        period_range_3P[0],
-        period_range_3P[1],
-        color="gold",
-        alpha=0.25,
-        label="3P range"
-    )
-
-    # ========================================================
-    # Vertical positions for modes
-    # ========================================================
-
-    y_rbm = {
-        "surge": 0.25,
-        "sway":  0.35,
-        "heave": 0.45,
-        "roll":  0.55,
-        "pitch": 0.65,
-        "yaw":   0.75
-    }
-
-    y_tower1 = 0.87
-    y_tower2 = 0.96
-
-    # Small offset for different designs
-    design_spacing = 0.018
-
-    # ========================================================
-    # Plot modes for all designs
-    # ========================================================
-
-    for i, design in enumerate(design_labels):
-
-        color = colors[i]
-
-        y_offset = (
-            i - (n_designs - 1) / 2
-        ) * design_spacing
-
-        # ----------------------------------------------------
-        # Rigid-body modes
-        # ----------------------------------------------------
-
-        for mode in show_rbm:
-
-            if mode not in rbm_names:
-                raise ValueError(
-                    f"Unknown rigid-body mode '{mode}'."
-                )
-
-            period = (
-                rbm_periods[design][mode]
-            )
-
-            y = (
-                y_rbm[mode]
-                + y_offset
+            ax.axvline(
+                ff,
+                color=color,
+                linestyle="-.",
+                # linewidth=1.4,
+                # alpha=0.85,
+                zorder=3,
+                label=mode
             )
 
             ax.plot(
-                period,
-                y,
-                marker=markers[i],
-                # markersize=7,
-                color=color
-            )
-
-            ax.vlines(
-                period,
-                0.05,
-                y,
+                ff,
+                0.45,
+                marker=marker,
                 color=color,
-                alpha=0.50,
-                # linewidth=1.2,
-                linestyle=":"
+                markersize=14,
+                transform=ax.get_xaxis_transform(),
+                clip_on=False
             )
 
-            # Label modes only for reference design
-            if i == 0:
-
-                ax.annotate(
-                    rbm_labels[mode],
-                    xy=(period, y),
-                    xytext=(0, 8),
-                    textcoords="offset points",
-                    ha="center",
-                    va="bottom",
-                    # fontsize=9,
-                    rotation=90
-                )
-
-        # ----------------------------------------------------
-        # Tower modes
-        # ----------------------------------------------------
-
-        if show_tower_modes:
-
-            T1 = (
-                tower_periods[design]["tower_T1"]
+            ax.text(
+                ff,
+                tpos,
+                mode,
+                rotation=0,
+                va="top",
+                ha="center",
+                backgroundcolor="white",
+                zorder=10
             )
 
-            T2 = (
-                tower_periods[design]["tower_T2"]
+        # --------------------------------------------------
+        # Tower modes: floatingse.f1 and floatingse.f2 [Hz]
+        # --------------------------------------------------
+
+        f1 = float(row["floatingse.f1"])
+        f2 = float(row["floatingse.f2"])
+
+        tower_periods[design] = {
+            "tower_T1": 1.0 / f1 if f1 > 0 else np.nan,
+            "tower_T2": 1.0 / f2 if f2 > 0 else np.nan,
+        }
+
+        if i == 0:
+            ax.text(
+                f1,
+                0.98,
+                f"Tower (FA, SS)",
+                rotation=0,
+                va="top",
+                ha="center",
+                backgroundcolor="white",
+                zorder=10
+            )
+
+        for ff in (f1, f2):
+            if not np.isfinite(ff) or ff <= 0:
+                continue
+
+            ax.axvline(
+                ff,
+                color=color,
+                linestyle="--",
+                # linewidth=1.8,
+                # alpha=0.9,
+                zorder=4,
+                label=mode
             )
 
             ax.plot(
-                T1,
-                y_tower1 + y_offset,
-                marker="s",
-                # markersize=8,
-                color=color
-            )
-
-            ax.vlines(
-                T1,
-                0.05,
-                y_tower1 + y_offset,
+                ff,
+                0.45,
+                marker=marker,
                 color=color,
-                alpha=0.55,
-                # linewidth=1.5,
-                linestyle="--"
+                markersize=14,
+                transform=ax.get_xaxis_transform(),
+                clip_on=False
             )
 
-            ax.plot(
-                T2,
-                y_tower2 + y_offset,
-                marker="s",
-                # markersize=8,
-                color=color
-            )
+    # ==================================================
+    # Formatting
+    # ==================================================
 
-            ax.vlines(
-                T2,
-                0.05,
-                y_tower2 + y_offset,
+    ax.set_xlabel("Frequency [Hz]")
+    ax.set_ylabel("Normalized Power Spectrum")
+    ax.set_xlim(0, f.max())
+    ax.set_ylim(0, 1.05)
+    ax.set_title(title)
+    ax.grid(True, which="both", alpha=0.25)
+
+    # Legend handles
+    handles = [
+        Patch(facecolor="0.8", alpha=0.5, label="1P constraint"),
+        Patch(
+            facecolor="none", hatch="//",
+            edgecolor="black", label="1P design range"
+        ),
+        Patch(facecolor="0.6", alpha=0.5, label="3P constraint"),
+        Patch(
+            facecolor="none", hatch="\\\\",
+            edgecolor="black", label="3P design range"
+        ),
+        Line2D([0], [0], color="blue", label="Wave spectrum (JONSWAP)"),
+        Line2D([0], [0], color="red", linestyle=":", label="Wind spectrum (Kaimal)"),
+        Line2D([0], [0], color="black", linestyle="-.", label="Rigid-body modes"),
+        Line2D([0], [0], color="black", linestyle="--", label="Tower modes"),
+    ]
+
+    # One legend entry per design, using supplied colors and markers
+    for design, color, marker in zip(design_labels, colors, markers):
+        handles.append(
+            Line2D(
+                [0], [0],
                 color=color,
-                alpha=0.55,
-                # linewidth=1.5,
-                linestyle="--"
+                marker=marker,
+                linestyle="none",
+                label=str(design)
             )
-
-            # Labels only once
-            if i == 0:
-
-                ax.annotate(
-                    "Tower 1st",
-                    xy=(
-                        T1,
-                        y_tower1 + y_offset
-                    ),
-                    xytext=(0, 8),
-                    textcoords="offset points",
-                    ha="center",
-                    va="bottom",
-                    # fontsize=9
-                )
-
-                ax.annotate(
-                    "Tower 2nd",
-                    xy=(
-                        T2,
-                        y_tower2 + y_offset
-                    ),
-                    xytext=(0, 8),
-                    textcoords="offset points",
-                    ha="center",
-                    va="bottom",
-                    # fontsize=9
-                )
-
-    # ========================================================
-    # Dummy handles for design legend
-    # ========================================================
-
-    for i, design in enumerate(design_labels):
-
-        ax.plot(
-            [],
-            [],
-            # "-o",
-            color=colors[i],
-            marker=markers[i],
-            label=design
         )
 
-    # ========================================================
-    # Axis formatting
-    # ========================================================
-
-    if logscale:
-        ax.set_xscale("log")
-
-    ax.set_xlabel(
-        "Natural Period [s]"
+    ax.legend(
+        loc="lower center",
+        handles=handles,
+        ncol=4,
+        bbox_to_anchor=(0.5,-0.5),
     )
 
-    ax.set_ylabel(
-        "Modes"
-    )
+    fig.tight_layout()
 
-    ax.set_yticks([])
-
-    ax.set_ylim(
-        0.0,
-        1.08
-    )
-
-    ax.grid(
-        True,
-        axis="x",
-        which="both",
-        alpha=0.3
-    )
-
-    ax.set_axisbelow(True)
-
-    # ========================================================
-    # Title + legend
-    # ========================================================
-
-    if title is not None:
-
-        fig.suptitle(
-            title,
-            y=0.98
-        )
-
-    handles, labels = (
-        ax.get_legend_handles_labels()
-    )
-
-    unique = dict(
-        zip(labels, handles)
-    )
-
-    fig.legend(
-        unique.values(),
-        unique.keys(),
-        loc="upper center",
-        bbox_to_anchor=(0.5, 0.91),
-        ncol=min(len(unique), 5),
-        frameon=True
-    )
-
-    fig.tight_layout(
-        rect=[
-            0.0,
-            0.0,
-            1.0,
-            0.84
-        ]
-    )
-
-    return (
-        fig,
-        ax,
-        rbm_periods,
-        tower_periods,
-        period_range_1P,
-        period_range_3P
-    )
+    return fig, ax, rbm_periods, tower_periods
 
 #%%
-fig, ax, rbm_periods, tower_periods, period_1P, period_3P = (
-    plot_period_spectra_from_csv(
-        csv_path=csv_all_results,
 
+clrs_compr_w_black = clrs_compr.copy()
+clrs_compr_w_black[0] = "black"
+
+fig, ax, rbm_periods, tower_periods = (
+    plot_frequency_placement_with_metocean(
+        csv_path=csv_all_results,
+        modeling_options_yaml=fname_modeling_options,
         rpm_min=rpm_min,
         rpm_rated=rpm_rated,
-
         design_labels=labels_compr,
-
-        colors=[
-            "black",
-            "tab:blue",
-            "tab:red"
-        ],
-        markers=[ "o", "v", "^"],
-        figsize=(16, 6),
-
-        title="Excitation, Rigid-Body and Tower-Bending Period Comparison"
+        colors=clrs_compr_w_black,
+        markers=["o", "v", "^"],
+        figsize=(21, 10),
+        title="Excitation, Rigid-Body and Tower-Bending Frequency Comparison"
     )
 )
 
@@ -2105,7 +2004,7 @@ print(" - freqs ", freq_range_1P, " Hz | Periods ", 1/freq_range_1P, " s." )
 print("3P (blade passing) ranges:")
 print(" - freqs ", freq_range_3P, " Hz | Periods ", 1/freq_range_3P, " s.\n" )
 
-if False: #flag_save_plots:
+if 0: #flag_save_plots:
     path_freq = os.path.join(
         run_dir,
         "outputs",
@@ -2524,11 +2423,7 @@ fig, axs, values_WS, differences_WS = (
 
         figsize=(16, 12),
         design_labels=labels_compr,
-        colors=[
-            "black",
-            "tab:blue",
-            "tab:red"
-        ],
+        colors=clrs_compr_w_black,
         markers=[ "o", "v", "^"],
         title="Maximum Response vs. Wind-Speed Comparison"
     )
@@ -2886,11 +2781,7 @@ fig, axs, Tmoor_DLC11, diff_DLC11 = (
         reference_index=0,
         figsize=(16,6),
         design_labels=labels_compr,
-        colors=[
-            "black",
-            "tab:blue",
-            "tab:red"
-        ],
+        colors=clrs_compr_w_black,
         markers=[ "o", "v", "^"],
         title = f"Tendon {tendon_index+1} Maximum Tensions (DLC {DLC})"
     )
