@@ -375,9 +375,9 @@ labels_compr=[
         "+50% Nac. mass"
     ]
 clrs_compr=[
-    "0.6", #"turquoise",
-    "tab:blue", #"tab:cyan",
-    "tab:red", #"tab:blue"
+    "0.7", #"turquoise",
+    "tab:green", #"tab:cyan",
+    "tab:orange", #"tab:blue"
     ]
 
 RBM_NAMES_SYMB_DICT = {
@@ -765,7 +765,7 @@ fig, axs, F, M = plot_bars_force_moment_loads(
 )
 
 # save
-if False: #flag_save_plots:
+if 0: #flag_save_plots:
     path_twrTopLoads_compr = os.path.join(
         run_dir, "outputs\\compr_twrTopLoads.png")
     fig.savefig(
@@ -793,9 +793,9 @@ fig, axs, F, M = plot_bars_force_moment_loads(
 )
 
 # save
-if False: #flag_save_plots:
+if 0: #flag_save_plots:
     path_twrBaseLoads_compr = os.path.join(
-        run_dir, "outputs\\compr_twrBaseLoads.pdf")
+        run_dir, "outputs\\compr_twrBaseLoads.png")
     fig.savefig(
         path_twrBaseLoads_compr,
         bbox_inches="tight",
@@ -1236,7 +1236,7 @@ fig, axs, values, differences = (
         show_percent=True,
         percent_decimals=1,
         figsize=(16,9),
-        title="Maximum Response Comparison"
+        title="Maximum Response Comparison (DLC 6.1)"
     )
 )
 
@@ -1539,13 +1539,9 @@ def plot_comparison_bar_plot_of_1Darray_from_csv(
     # Axis titles
     # ========================================================
 
-    axs[0].set_title(
-        "Translational Modes"
-    )
+    axs[0].set_title( "Translational Modes" )
 
-    axs[1].set_title(
-        "Rotational Modes"
-    )
+    axs[1].set_title( "Rotational Modes" )
 
     # only one legend required
     handles, labels = axs[0].get_legend_handles_labels()
@@ -1598,7 +1594,9 @@ fig, axs, values_RBM, differences_RBM = (
 
 # Save
 if 0: #flag_save_plots:
-    path_compr_RBM = os.path.join( run_dir, "outputs\\compr_RBM.png" )
+    path_compr_RBM = os.path.join(
+        run_dir, "outputs\\compr_RBM.png"
+    )
     fig.savefig(
         path_compr_RBM,
         bbox_inches="tight",
@@ -1692,6 +1690,43 @@ def spectrum_kaimal(
     )
 
     return S
+
+def calculate_2_std_of_rotor_speed_samples( rotor_speed_ts ):
+    """
+    for 1P, 3P bands.
+
+    Under an approximately normal distribution, +/- 2 sigma covers about 95% of the values.
+    Rotor-speed distribution from eg. `OpenFAST/WEIS`.
+
+    Output
+    _____
+    margins for 1P and 3P bands
+    """
+
+    # ==================================================
+    # 1P / 3P bands with ±2 standard deviations
+    # ==================================================
+
+    # Obtain this from rotor-speed time-series data [rpm]
+    # Example:
+    rotor_speed_samples_rpm = np.asarray(rotor_speed_ts)
+
+    sigma_rpm = np.std(rotor_speed_samples_rpm, ddof=1)
+
+    # Nominal frequency ranges [Hz]
+    f_1P = np.sort(np.array([rpm_min, rpm_rated]) / 60.0)
+    f_3P = 3.0 * f_1P
+
+    # Frequency standard deviations [Hz]
+    sigma_f_1P = sigma_rpm / 60.0
+    sigma_f_3P = 3.0 * sigma_rpm / 60.0
+
+    # ±2σ margins
+    margin_1P = 2.0 * sigma_f_1P
+    margin_3P = 2.0 * sigma_f_3P
+
+    return margin_1P, margin_3P
+
 #%%
 def plot_frequency_placement_with_metocean(
         csv_path,
@@ -1739,6 +1774,8 @@ def plot_frequency_placement_with_metocean(
     # Wave spectra (selected metocean conditions)
     # ==================================================
 
+    clr_wave_spec = "blue"
+
     for idx in wind_speed_indices:
         Hs, Tp = Hs_all[idx], Tp_all[idx]
 
@@ -1747,7 +1784,7 @@ def plot_frequency_placement_with_metocean(
 
         ax.plot(
             f, S,
-            color="blue",
+            color=clr_wave_spec,
             alpha=0.7,
             label=f"Wave: Hs={Hs:.1f} m, Tp={Tp:.1f} s"
         )
@@ -1755,6 +1792,8 @@ def plot_frequency_placement_with_metocean(
     # ==================================================
     # Wind spectra
     # ==================================================
+
+    clr_wind_spec = "red"
 
     for idx in wind_speed_indices:
         U = wind_speeds[idx]
@@ -1764,7 +1803,7 @@ def plot_frequency_placement_with_metocean(
 
         ax.plot(
             f, S,
-            color="red",
+            color=clr_wind_spec,
             alpha=0.7,
             label=f"Wind: U={U:.0f} m/s"
         )
@@ -1775,14 +1814,17 @@ def plot_frequency_placement_with_metocean(
 
     f_1P = np.sort(np.array([rpm_min, rpm_rated], dtype=float) / 60.0)
     f_3P = 3.0 * f_1P
-    margin_P = 0.02
 
+    margin_1P, margin_3P = 0.02, 0.05
+    # TODO: use function `calculate_2_std_of_rotor_speed_samples`
 
     # ========== 1P ==========
+    clr_1p = "0.6"
+
     ax.axvspan(
-        max(0.0, f_1P[0] - margin_P),
-        f_1P[1] + margin_P,
-        color="0.8", zorder=0
+        max(0.0, f_1P[0] - margin_1P),
+        f_1P[1] + margin_1P,
+        color=clr_1p, zorder=0
     )
     ax.axvspan(
         f_1P[0], f_1P[1],
@@ -1791,10 +1833,12 @@ def plot_frequency_placement_with_metocean(
     )
 
     # ========== 3P ==========
+    clr_3p = "0.8"
+
     ax.axvspan(
-        max(0.0, f_3P[0] - margin_P),
-        f_3P[1] + margin_P,
-        color="0.6", zorder=0
+        max(0.0, f_3P[0] - margin_3P),
+        f_3P[1] + margin_3P,
+        color=clr_3p, zorder=0
     )
     ax.axvspan(
         f_3P[0], f_3P[1],
@@ -1939,20 +1983,38 @@ def plot_frequency_placement_with_metocean(
 
     # Legend handles
     handles = [
-        Patch(facecolor="0.8", alpha=0.5, label="1P constraint"),
         Patch(
-            facecolor="none", hatch="//",
-            edgecolor="black", label="1P design range"
+            facecolor=clr_1p, alpha=0.5,
+            label="1P constraint"
         ),
-        Patch(facecolor="0.6", alpha=0.5, label="3P constraint"),
         Patch(
-            facecolor="none", hatch="\\\\",
-            edgecolor="black", label="3P design range"
+            facecolor="none", hatch="//", edgecolor="black",
+            label="1P design range"
         ),
-        Line2D([0], [0], color="blue", label="Wave spectrum (JONSWAP)"),
-        Line2D([0], [0], color="red", linestyle=":", label="Wind spectrum (Kaimal)"),
-        Line2D([0], [0], color="black", linestyle="-.", label="Rigid-body modes"),
-        Line2D([0], [0], color="black", linestyle="--", label="Tower modes"),
+        Patch(
+            facecolor=clr_3p, alpha=0.5,
+            label="3P constraint"
+        ),
+        Patch(
+            facecolor="none", hatch="//", edgecolor="black",
+            label="3P design range"
+        ),
+        Line2D(
+            [0], [0], color=clr_wave_spec,
+            label="Wave spectrum (JONSWAP)"
+        ),
+        Line2D(
+            [0], [0], color=clr_wind_spec,
+            label="Wind spectrum (Kaimal)"
+        ),
+        Line2D(
+            [0], [0], color="black", linestyle="-.",
+            label="Rigid-body modes"
+        ),
+        Line2D(
+            [0], [0], color="black", linestyle="--",
+            label="Tower modes"
+        ),
     ]
 
     # One legend entry per design, using supplied colors and markers
@@ -2412,6 +2474,11 @@ wind_speeds = [
     3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25
 ]
 
+DLC = "1.1" # 1.1 or 1.6
+
+if DLC == "1.1": index_start_end=(0, 12)
+elif DLC == "1.6": index_start_end=(12, 24)
+else: ValueError(" --- valid DLC values are 1.1 and 1.6 ;")
 
 fig, axs, values_WS, differences_WS = (
     plot_comparison_windspeed_series_from_csv(
@@ -2419,17 +2486,17 @@ fig, axs, values_WS, differences_WS = (
         lst_vars=lst_vars_wind,
         wind_speeds=wind_speeds,
         reference_index=0,
-        index_start_end=(0,12),
+        index_start_end=index_start_end,
 
         figsize=(16, 12),
         design_labels=labels_compr,
         colors=clrs_compr_w_black,
         markers=[ "o", "v", "^"],
-        title="Maximum Response vs. Wind-Speed Comparison"
+        title=f"Maximum Response vs. Wind-Speed Comparison (DLC {DLC})"
     )
 )
 
-if False: #flag_save_plots:
+if 0: #flag_save_plots:
     path_compr_response_with_WS = os.path.join(
         run_dir, "outputs\\compr_response_with_WS.png")
     fig.savefig(
@@ -2763,7 +2830,7 @@ def plot_comparison_Tmoor_windspeed_from_csv(
         differences
     )
 # %%
-tendon_index = 0 # 0 = tendon 1 ; 3 = tendon 4
+tendon_index = 3 # 0 = tendon 1 ; 3 = tendon 4
 
 DLC = "1.1" # 1.1 or 1.6
 
@@ -2787,9 +2854,11 @@ fig, axs, Tmoor_DLC11, diff_DLC11 = (
     )
 )
 
-if False: #flag_save_plots:
+if 0: #flag_save_plots:
     path_compr_TmoorMax = os.path.join(
-        run_dir, f"outputs\\compr_Tmoor_{tendon_index+1}_max_with_WS.png")
+        run_dir,
+        f"outputs\\compr_Tmoor_{tendon_index+1}_max_with_WS.png"
+    )
     fig.savefig(
         path_compr_TmoorMax,
         bbox_inches="tight",
