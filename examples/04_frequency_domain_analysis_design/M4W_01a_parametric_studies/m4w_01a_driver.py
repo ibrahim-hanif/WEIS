@@ -32,11 +32,25 @@ TEST_RUN = False # TEST_RUN will reduce the number and duration of simulations
 
 dt_optim = True # turbine to analyse: True = new optim / False = base case
 
-override = "more" # valid = "" or "more" or "less" ; % change in Nac mass for param study
+# ---- sensitivity study parameters: TODO: used defined
+sensitiv_compn = "DT" # valid =
+# 1. DT = Nac mass
+# 2. MOOR TODO = TLP tendon tensions
+
+override = "less" # valid =
+# "" or "more" or "less"
+
+percent_change = "50" # % change
+# 1. "50"
+# 2. "20"
+
+str_compn_n_percent = f"{sensitiv_compn}_{percent_change}"
+str_full_sens = f"{sensitiv_compn}_{percent_change}{override}"
+# ----
 
 flag_save_results = False
 
-flag_load_results_csv = True # runWEIS or not, for new analysis
+flag_load_results_csv = False # runWEIS or not, for new analysis
 
 flag_save_plots = False
 
@@ -66,15 +80,17 @@ else:
     fname_analysis_options = os.path.join(optimDTtower_dir, analy_optimDT)  
 
 # -- post-processing
-csv_all_results = os.path.join( run_dir, "outputs\\compr_DD.csv" )
+csv_all_results = os.path.join(
+    run_dir, f"outputs\\compr_{str_compn_n_percent}.csv"
+)
 
 #%% 
 # pre-process for parametric studies
 
 lst_output_folder = [
   "outputs\\iea15_UN\\results.csv",         # reference design (iea15 for UN)
-  "outputs\\iea15_UN_50less\\results.csv",   # 50 % lower Nac weight
-  "outputs\\iea15_UN_50more\\results.csv",   # 50 % higher Nac weight
+  f"outputs\\iea15_UN_{str_compn_n_percent}less\\results.csv",   # 50 % lower Nac weight
+  f"outputs\\iea15_UN_{str_compn_n_percent}more\\results.csv",   # 50 % higher Nac weight
 ]
 
 # base case csv
@@ -109,15 +125,24 @@ rpm_rated = eval(dict_iea15['drivese.rated_rpm'])
 # ---- geometry
 override_geometry = {}
 
-if "less" in override:
-    override_geometry["drivese.generator_mass_user"] = gen_mass_4_nac_pct_change(
-        -0.5
-    )
+percent_change_in_decimaL  = float(eval(percent_change)/100)
 
-elif "more" in override:
-    override_geometry["drivese.generator_mass_user"] = gen_mass_4_nac_pct_change(
-        0.5
-    )
+# 1. if Drivetrain/nacelle sensitivity
+if ("DT" in sensitiv_compn):
+    if "less" in override:
+        override_geometry["drivese.generator_mass_user"] = gen_mass_4_nac_pct_change(
+            -percent_change_in_decimaL
+        )
+    elif "more" in override:
+        override_geometry["drivese.generator_mass_user"] = gen_mass_4_nac_pct_change(
+            percent_change_in_decimaL
+        )
+
+elif ("MOOR" in sensitiv_compn): # TODO
+    if "less" in override:
+        override_geometry["mooring.line_stiffness"] = np.array([2.E9] * 8)
+    elif "more" in override:
+        override_geometry["mooring.unstretched_length_in"] = 264.
 
 # ---- analysis
 override_analysis = {}
@@ -367,12 +392,18 @@ if flag_save_results:
 if flag_load_results_csv:
    outputs_df = pd.read_csv(csv_all_results)
 
-#%%
-# # Plotting
+#%%[markdown]
+# # Plotting results from the sensitivity study 
+
+#%% options for plotting
+
+if sensitiv_compn == "DT": str_compn_label = "Nac. mass"
+elif sensitiv_compn == "MOOR": str_compn_label = "Tension"
+
 labels_compr=[
         "Reference",
-        "-50% Nac. mass",
-        "+50% Nac. mass"
+        f"-{percent_change}% {str_compn_label}",
+        f"+{percent_change}% {str_compn_label}",
     ]
 clrs_compr=[
     "0.7", #"turquoise",
@@ -767,7 +798,9 @@ fig, axs, F, M = plot_bars_force_moment_loads(
 # save
 if 0: #flag_save_plots:
     path_twrTopLoads_compr = os.path.join(
-        run_dir, "outputs\\compr_twrTopLoads.png")
+        run_dir,
+        f"outputs\\compr_twrTopLoads_{str_compn_n_percent}.png"
+    )
     fig.savefig(
         path_twrTopLoads_compr,
         bbox_inches="tight",
@@ -795,7 +828,9 @@ fig, axs, F, M = plot_bars_force_moment_loads(
 # save
 if 0: #flag_save_plots:
     path_twrBaseLoads_compr = os.path.join(
-        run_dir, "outputs\\compr_twrBaseLoads.png")
+        run_dir,
+        f"outputs\\compr_twrBaseLoads_{str_compn_n_percent}.png"
+    )
     fig.savefig(
         path_twrBaseLoads_compr,
         bbox_inches="tight",
@@ -1242,7 +1277,9 @@ fig, axs, values, differences = (
 
 if 0: #flag_save_plots:
     path_maxDynamicVariables_compr = os.path.join(
-    run_dir, "outputs\\compr_maxDynamicVariables.png")
+        run_dir,
+        f"outputs\\compr_maxDynamicVariables_{str_compn_n_percent}.png"
+    )
     fig.savefig(
         path_maxDynamicVariables_compr,
         bbox_inches="tight",
@@ -1595,7 +1632,8 @@ fig, axs, values_RBM, differences_RBM = (
 # Save
 if 0: #flag_save_plots:
     path_compr_RBM = os.path.join(
-        run_dir, "outputs\\compr_RBM.png"
+        run_dir,
+        f"outputs\\compr_RBM_{str_compn_n_percent}.png"
     )
     fig.savefig(
         path_compr_RBM,
@@ -2070,7 +2108,7 @@ if 0: #flag_save_plots:
     path_freq = os.path.join(
         run_dir,
         "outputs",
-        "compr_natPeriods_to_excitation.png"
+        f"compr_natPeriods_to_excitation_{str_compn_n_percent}.png"
     )
 
     fig.savefig(
@@ -2498,7 +2536,9 @@ fig, axs, values_WS, differences_WS = (
 
 if 0: #flag_save_plots:
     path_compr_response_with_WS = os.path.join(
-        run_dir, "outputs\\compr_response_with_WS.png")
+        run_dir,
+        "outputs\\compr_response_with_WS_{str_compn_n_percent}.png"
+    )
     fig.savefig(
         path_compr_response_with_WS,
         bbox_inches="tight",
@@ -2830,7 +2870,7 @@ def plot_comparison_Tmoor_windspeed_from_csv(
         differences
     )
 # %%
-tendon_index = 3 # 0 = tendon 1 ; 3 = tendon 4
+tendon_index = 0 # 0 = tendon 1 ; 3 = tendon 4
 
 DLC = "1.1" # 1.1 or 1.6
 
@@ -2857,7 +2897,7 @@ fig, axs, Tmoor_DLC11, diff_DLC11 = (
 if 0: #flag_save_plots:
     path_compr_TmoorMax = os.path.join(
         run_dir,
-        f"outputs\\compr_Tmoor_{tendon_index+1}_max_with_WS.png"
+        f"outputs\\compr_Tmoor_{tendon_index+1}_max_with_WS_{str_compn_n_percent}.png"
     )
     fig.savefig(
         path_compr_TmoorMax,
