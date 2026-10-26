@@ -9,26 +9,42 @@ General:
         bem_members: [] # TODO: what should this be? (def. [])
         bem_file_base: 'M:/Vasudev_Gupta/Data/m4w_TLPhydro_UN/M4W_TLP_UN' # = hydroPath in raft yaml (defined in gc_LoadInputs)
 
-WISDEM:
+WISDEM: # NOTE: copy from `...\M4W_01_base_case_UN_TLPwamit\modelOpts.yaml`
     RotorSE:
         flag: True
         spar_cap_ss: Spar_Cap_SS
         spar_cap_ps: Spar_Cap_PS
         te_ss: TE_reinforcement_SS
         te_ps: TE_reinforcement_PS
-        gust_std: 15.0 # TODO def:3.0, max:15.0 (in schema) | (used in rotor_power.py/GustETM, line 108)
-    TowerSE:
-        flag: True
+        gust_std: 5.0
     DriveSE:
         flag: True
+    TowerSE:
+        flag: True
+        wind: PowerWind
+        # ---- Partial safety factors (SF)
+        gamma_f: 1.35    # SF for loads (extreme ULS): def. 1.35 (cf. IEC-1, tab.3)
+        gamma_m: 1.15     # SF for material resistance: def. 1.3
+        gamma_n: 1.0     # SF for consequence of failure: def. 1.0
+        gamma_b: 1.1     # SF for buckling: def. 1.1
+        gamma_freq: 1.1  # SF on modal frequencies: def. 1.1
+        gamma_fatigue: 1.0  # SF for fatigue failure: def. 1.0
+        # ----
+        buckling_method: dnvgl # Buckling code type [eurocode or dnvgl]: def. dnvgl
+        buckling_length: 15    # .. factor in Eurocode safety check: def. 10.0
+        frame3dd:
+            shear: True
+            geom: True
+            tol: 1e-9
     FloatingSE:
         flag: True
         symmetric_moorings: True
+        # ---- Partial SFs: same as in TowerSE
         gamma_f: 1.35    # Safety factor for fatigue loads
-        gamma_m: 1.3     # Safety factor for material properties
+        gamma_m: 1.15     # Safety factor for material properties
         gamma_n: 1.0     # Safety factor for ...
         gamma_b: 1.1     # Safety factor for ...
-        gamma_fatigue: 1.755  # Safety factor for fatigue loads
+        gamma_fatigue: 1.0  # Safety factor for fatigue loads
     BOS:
         flag: True
         plant_turbine_spacing: 7
