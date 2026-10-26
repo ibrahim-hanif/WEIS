@@ -37,7 +37,7 @@ sensitiv_compn = "DT" # valid =
 # 1. DT = Nac mass
 # 2. MOOR TODO = TLP tendon tensions
 
-override = "less" # valid =
+override = "more" # valid =
 # "" or "more" or "less"
 
 percent_change = "50" # % change
@@ -69,7 +69,7 @@ else:
     fname_wt_input = os.path.join(optimDTtower_dir, geo_optimDT)
 
 # -- modelling
-fname_modeling_options = os.path.join(run_dir, "modelOpts.yaml")
+fname_modeling_options = os.path.join(optimDTtower_dir, "modelOpts.yaml")
 
 # -- analysis
 analy_basecase = "analysisNOOpt.yaml"
@@ -140,9 +140,14 @@ if ("DT" in sensitiv_compn):
 
 elif ("MOOR" in sensitiv_compn): # TODO
     if "less" in override:
-        override_geometry["mooring.line_stiffness"] = np.array([2.E9] * 8)
+        # NOTE: should be 0.51744 [m] for the basecase
+        mooring_dia = float(eval(dict_iea15["mooring.line_diameter"])[0])
+        # stiffness per diameter^2
+        override_geometry["mooring.line_stiffness_coeff"] = np.array(
+            [2.46E9 / (mooring_dia**2)] * 8
+        )
     elif "more" in override:
-        override_geometry["mooring.unstretched_length_in"] = 264.
+        override_geometry["mooring.unstretched_length_in"] = 264.64
 
 # ---- analysis
 override_analysis = {}
@@ -408,7 +413,7 @@ labels_compr=[
 clrs_compr=[
     "0.7", #"turquoise",
     "tab:green", #"tab:cyan",
-    "tab:orange", #"tab:blue"
+    "tab:red", #"tab:blue"
     ]
 
 RBM_NAMES_SYMB_DICT = {
@@ -853,7 +858,7 @@ def plot_comparison_bar_plot_of_float_vars_from_csv(
         reference_index=0,
         percent_decimals=1,
         title="Maximum Results Comparison",
-        loc_save_img=None):
+        idx_axis_show_legend=0):
     """
     Compare scalar/float variables between an arbitrary number
     of designs stored as rows of a CSV.
@@ -1223,7 +1228,7 @@ def plot_comparison_bar_plot_of_float_vars_from_csv(
     # Legend
     # ========================================================
 
-    axs_active[0].legend()
+    axs_active[ idx_axis_show_legend ].legend()
 
     # ========================================================
     # Figure title
@@ -1257,6 +1262,8 @@ lst_vars_max = [
     (str_max_Tmoor_1_anchor,  r"$T_{1,anchor}^{max}$", "[N]")
 ]
 
+if sensitiv_compn == "DT": idx_axis_show_legend = 0
+elif sensitiv_compn == "MOOR": idx_axis_show_legend = 3
 
 fig, axs, values, differences = (
     plot_comparison_bar_plot_of_float_vars_from_csv(
@@ -1271,7 +1278,8 @@ fig, axs, values, differences = (
         show_percent=True,
         percent_decimals=1,
         figsize=(16,9),
-        title="Maximum Response Comparison (DLC 6.1)"
+        title="Maximum Response Comparison (DLC 6.1)",
+        idx_axis_show_legend=idx_axis_show_legend
     )
 )
 
@@ -1812,7 +1820,7 @@ def plot_frequency_placement_with_metocean(
     # Wave spectra (selected metocean conditions)
     # ==================================================
 
-    clr_wave_spec = "blue"
+    clr_wave_spec = "aqua"
 
     for idx in wind_speed_indices:
         Hs, Tp = Hs_all[idx], Tp_all[idx]
@@ -1831,7 +1839,7 @@ def plot_frequency_placement_with_metocean(
     # Wind spectra
     # ==================================================
 
-    clr_wind_spec = "red"
+    clr_wind_spec = "blue"
 
     for idx in wind_speed_indices:
         U = wind_speeds[idx]
@@ -1857,7 +1865,7 @@ def plot_frequency_placement_with_metocean(
     # TODO: use function `calculate_2_std_of_rotor_speed_samples`
 
     # ========== 1P ==========
-    clr_1p = "0.6"
+    clr_1p = "0.7"
 
     ax.axvspan(
         max(0.0, f_1P[0] - margin_1P),
@@ -2537,7 +2545,7 @@ fig, axs, values_WS, differences_WS = (
 if 0: #flag_save_plots:
     path_compr_response_with_WS = os.path.join(
         run_dir,
-        "outputs\\compr_response_with_WS_{str_compn_n_percent}.png"
+        f"outputs\\compr_response_with_WS_{str_compn_n_percent}.png"
     )
     fig.savefig(
         path_compr_response_with_WS,
@@ -2895,9 +2903,11 @@ fig, axs, Tmoor_DLC11, diff_DLC11 = (
 )
 
 if 0: #flag_save_plots:
+    str_extn = ".png"
+
     path_compr_TmoorMax = os.path.join(
         run_dir,
-        f"outputs\\compr_Tmoor_{tendon_index+1}_max_with_WS_{str_compn_n_percent}.png"
+        f"outputs\\compr_Tmoor_{tendon_index+1}_max_with_WS_{str_compn_n_percent}"+str_extn
     )
     fig.savefig(
         path_compr_TmoorMax,
