@@ -27,7 +27,7 @@ case_dict = {
     "basecase":     "M4W_01b_basecase_UN_optimDTtower",
     "innovative":   "M4W_01c_innovative_UN_optimDTtower"
 }
-case_user = "innovative" # TODO: select "basecase" or "innovative"
+case_user = "basecase" # TODO: select "basecase" or "innovative"
 case_loc = case_dict[ case_user ]
 # ----
 
@@ -35,13 +35,13 @@ flag_GBO = False # To perform optimization (True) or not (False)
 
 flag_onlyDT = False # NOTE: # 1
 
-flag_onlyTower = False # NOTE: # 2
+flag_onlyTower = True # NOTE: # 2
 
-flag_DTandTower = True # NOTE: # 3 (not for iea15 DD)
+flag_DTandTower = False # NOTE: # 3 (not for iea15 DD)
 
 wt_optim = True # turbine to analyse: True = new optim / False = base case
 
-flag_load_results_csv = True
+flag_load_results_csv = False
 
 #%%
 ## File management
@@ -127,7 +127,7 @@ elif flag_onlyTower:
 
 elif flag_DTandTower: # use basecase for DT+tower optim
     fname_wt_input = loc_yaml_geo_tower_optim # loc_yaml_geo_basecase
-    print(" -- initial turbine design: basecase")
+    print(" -- initial turbine design: saved Tower optim")
 
 else: # base case
     fname_wt_input = loc_yaml_geo_basecase
@@ -271,14 +271,15 @@ if case_user == "innovative":
 fig_DTconstrs, ax_DTconstrs = plot_drivetrain_constraints(
     csv_file,lst_constrs=lst_DTconstrs,flag_WTnamespace=True)
 
-if case_user == "basecase": # TODO
+if (case_user == "basecase") and (flag_GBO is True): # TODO
     fig_DTconstrs.axes[1].patches[0].set_color("tab:green")
     fig_DTconstrs.axes[1].patches[1].set_color("tab:green")
+    fig_DTconstrs.axes[1].patches[5].set_color("tab:green")
 else: # innovative
     fig_DTconstrs.axes[1].patches[4].set_color("tab:green")
 
 # save
-if False: #flag_save_plots:
+if 0: #flag_save_plots:
     path_plot_dt_constr = os.path.join(
         run_dir, folder_results, fname_results + "_DT_constrs.png" )
     fig_DTconstrs.savefig(
@@ -299,7 +300,7 @@ fig_TowerConstrs, ax = plot_tower_constraints_stress_utils(
     colors=["tab:blue","tab:green","tab:orange"]
 )
 
-if False: #flag_save_plots: 
+if 0: #flag_save_plots: 
     path_plot_tower_constr = os.path.join(
             run_dir, folder_results, fname_results + "_tower_constrs.png" )
     fig_TowerConstrs.savefig(
@@ -355,7 +356,7 @@ ax_TowerGeo[0].legend_.set_bbox_to_anchor((0.9, 0.35))
 #
 ax_TowerGeo[0].set_ylabel("Height along tower [m]")
 
-if False: #flag_save_plots: 
+if 0: #flag_save_plots: 
     path_plot_tower_geo = os.path.join(
             run_dir, folder_results, fname_results + "_tower_geo.png" )
     fig_TowerGeo.savefig(
