@@ -951,8 +951,8 @@ components:
             wall_thickness: [0.1, 0.1]
             material: steel_drive
         hss:
-            length: 1.0
-            diameter: [0.5, 0.5]
+            length: 1.0 # TODO: 0.5
+            diameter: [0.5, 0.5] # TODO: 0.3
             wall_thickness: [0.1, 0.1]
             material: steel_drive
         bedplate:
@@ -961,8 +961,8 @@ components:
             web_thickness: 0.05
             material: steel_drive
         other_components:
-            mb1Type: CARB
-            mb2Type: SRB
+            mb1Type: CRB
+            mb2Type: TRB2
             # mb1_e: 0.4 # TODO: add
             # mb2_e: 0.4
             uptower: true
