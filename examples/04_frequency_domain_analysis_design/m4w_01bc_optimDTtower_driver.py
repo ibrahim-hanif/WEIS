@@ -27,7 +27,7 @@ case_dict = {
     "basecase":     "M4W_01b_basecase_UN_optimDTtower",
     "innovative":   "M4W_01c_innovative_UN_optimDTtower"
 }
-case_user = "basecase" # TODO: select "basecase" or "innovative"
+case_user = "innovative" # TODO: select "basecase" or "innovative"
 case_loc = case_dict[ case_user ]
 # ----
 
@@ -35,13 +35,13 @@ flag_GBO = False # To perform optimization (True) or not (False)
 
 flag_onlyDT = False # NOTE: # 1
 
-flag_onlyTower = True # NOTE: # 2
+flag_onlyTower = False # NOTE: # 2
 
-flag_DTandTower = False # NOTE: # 3 (not for iea15 DD)
+flag_DTandTower = True # NOTE: # 3 (not for iea15 DD)
 
 wt_optim = True # turbine to analyse: True = new optim / False = base case
 
-flag_load_results_csv = False
+flag_load_results_csv = True
 
 #%%
 ## File management
@@ -62,7 +62,7 @@ override_geometry = {}
 override_analysis = {}
 
 # -- MODELLING
-fname_modeling_options = os.path.join(run_dir, "modelOpts.yaml")
+fname_modeling_options = os.path.join(main_dir, "M4W_MODELING_OPTIONS.yaml")
 
 # -- ANALYSIS
 analysisNOopt = os.path.join(run_dir, "analysisNOOpt.yaml")
@@ -71,15 +71,19 @@ analysisOpt_onlyTower = os.path.join(run_dir, "analysisOpt_onlyTower.yaml")
 analysisOpt = os.path.join(run_dir, "analysisOpt.yaml") # NOTE: DT + Tower
 
 if flag_onlyDT:
+    print(" -- case: only DT optimization")
     fname_analysis_options = analysisOpt_onlyDT
 
 elif flag_onlyTower:
+    print(" -- case: only Tower optimization")
     fname_analysis_options = analysisOpt_onlyTower
 
 elif flag_DTandTower:
+    print(" -- case: DT + Tower optimization")
     fname_analysis_options = analysisOpt
 
 else:
+    print(" -- case: NO optimization (analysis)")
     fname_analysis_options = analysisNOopt
 
 dict_anaOpts = load_yaml( fname_analysis_options )
@@ -126,8 +130,13 @@ elif flag_onlyTower:
     print(" -- initial turbine design: saved DT optim")
 
 elif flag_DTandTower: # use basecase for DT+tower optim
-    fname_wt_input = loc_yaml_geo_tower_optim # loc_yaml_geo_basecase
-    print(" -- initial turbine design: saved Tower optim")
+    # TODO: start from basecase OR DT+tower seperated optimal results
+    # 1.
+    fname_wt_input = loc_yaml_geo_basecase #loc_yaml_geo_tower_optim OR loc_yaml_geo_basecase
+    print(" -- initial turbine design: basecase")
+    # 2. 
+    # fname_wt_input = loc_yaml_geo_tower_optim
+    # print(" -- initial turbine design: saved Tower optim")
 
 else: # base case
     fname_wt_input = loc_yaml_geo_basecase
@@ -319,20 +328,26 @@ from Drive4Wind.utilities.plot_tower_data import plot_tower_geo_comparison
 if flag_onlyTower:
     optim_yaml = loc_yaml_geo_tower_optim
     ref_yaml = loc_yaml_geo_dt_optim
-    optim_label = "Optimized tower"
-    ref_label = "Basecase tower"
+    optim_label = "De-coupled"
+    ref_label = "Basecase"
+
+    legend_anchor_box = (0.7, 0.35)
 
 elif flag_DTandTower:
     optim_yaml = loc_yaml_geo_wt_optim
     ref_yaml = loc_yaml_geo_tower_optim
-    optim_label = "DT+tower"
-    ref_label = "Only tower"
+    optim_label = "Integrated"
+    ref_label = "De-coupled"
+
+    legend_anchor_box = ()
 
 else:
     optim_yaml = loc_yaml_geo_basecase
     ref_yaml = loc_yaml_geo_basecase
     optim_label = "Basecase tower"
     ref_label = "Basecase tower"
+
+    legend_anchor_box = (0.9, 0.35)
 
 # ----
 
@@ -352,7 +367,7 @@ for iplot in range(2):
         if iline == 1: ax_TowerGeo[ iplot ].lines[ iline ].set_linestyle("--")
 #
 ax_TowerGeo[0].legend()
-ax_TowerGeo[0].legend_.set_bbox_to_anchor((0.9, 0.35))
+ax_TowerGeo[0].legend_.set_bbox_to_anchor( legend_anchor_box )
 #
 ax_TowerGeo[0].set_ylabel("Height along tower [m]")
 
