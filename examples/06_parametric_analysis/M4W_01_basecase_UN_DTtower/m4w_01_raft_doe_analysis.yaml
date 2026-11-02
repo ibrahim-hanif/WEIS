@@ -1,0 +1,79 @@
+general:
+    folder_output: outputs
+    fname_output: results
+
+design_variables:
+    user:
+        - name: drivese.generator_mass_user
+          lower_bound: [30.E3]     # FLOATFARM 15MW DD
+          upper_bound: [371.570E3] # IEA 15MW DD
+
+constraints:
+    drivetrain:
+        # ---- LSS ----
+        lss: # von mises
+            flag: False
+        mb1: # deflection
+            flag: False
+        mb2:
+            flag: False
+        shaft_deflection:
+            flag: False
+            upper_bound: 1e-4
+        shaft_angle:
+            flag: False
+            upper_bound: 1e-3
+        # ---- bedplate ----
+        bedplate:
+            flag: False
+        stator_angle:
+            flag: False
+            upper_bound: 1e-1
+        stator_deflection:
+            flag: False # TODO last iff needed
+            upper_bound: 1e-2
+        # ---- overall nacelle ----
+        height:
+            flag: False
+        length:
+            flag: False
+        ecc:
+            flag: False
+        access:
+            flag: False
+
+    floating: # TODO 1
+        Max_Offset: #(v) Maximum combined surge/sway offset
+            flag: False
+            max: 30.0 # TODO our val; this copied from umaine script
+        max_surge: # dist, as fraction of water depth
+            flag: False
+            upper_bound: 0.3 # 0.2-0.3 * water_depth(=265) m
+        mooring_tension: # keep below its breaking point
+            flag: False # NOTE: not converging, constr = floatingse.constr_axial_load': array([20.4915959])
+        
+    control: # TODO 1
+        nacelle_acceleration: # Maximum nacelle accelleration over all cases
+            flag: False
+        Max_TwrBsMyt: # Maximum tower base moment over all cases
+            flag: False   
+
+merit_figure_user: # TODO
+    name: "towerse.turbine_mass" # = rna_mass + tower_mass
+    ref: 1e7
+    max_flag: False
+    # name: "financese.lcoe"
+    # ref: 1e-1
+    # max_flag: False
+
+driver:
+  design_of_experiments:
+    flag: True            # Flag to enable design of experiments
+    run_parallel: True    # Flag to run using parallel processing
+    generator: Uniform    # Type of input generator. (Uniform)
+    num_samples: 2        # number of samples for (Uniform only)
+
+recorder:
+    flag: True              # Flag to activate OpenMDAO recorder
+    file_name: log_opt.sql  # Name of OpenMDAO recorder
+    includes: ['*raft*','*floating*','*platform*','*drivetrain*']

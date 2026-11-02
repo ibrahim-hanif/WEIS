@@ -1,3 +1,4 @@
+#%%
 """
 Simple script to show how to grab all cases from a DOE run. User can then
 postprocess or plot further.
@@ -25,17 +26,21 @@ def load_OMsql(log):
             rec_data[key].append(case[key])
         
     return rec_data
+#%%
+# (Vasudev Gupta) added this function, on 20.8.2026
+def save_csv_of_parametric_runs( post_multi, dir_sql_output ):
+    """
+    Inputs
+    _______
+    post_multi: bool
 
+        use Multiprocssing?
 
-if __name__ == "__main__":
-    
-    # Multiprocssing?
-    post_multi = True
+    dir_sql_output: str
 
-    # sql outfile directory
-    run_dir = os.path.dirname(os.path.realpath(__file__))   
-    output_dir = os.path.join(run_dir, "outputs/06_openfast_doe")
-    doe_logs = glob.glob(os.path.join(output_dir,"log_opt.sql*"))
+        path to directory of outputs from sql of DOE runs
+    """
+    doe_logs = glob.glob(os.path.join(dir_sql_output,"log_opt.sql*"))
     if len(doe_logs) < 1:
         raise FileExistsError("No output logs to post process!")
         
@@ -78,8 +83,17 @@ if __name__ == "__main__":
     
     # write to file
     outdata_fname = "doe_outdata"
-    outdata_fpath = os.path.join(output_dir,outdata_fname) 
+    outdata_fpath = os.path.join(dir_sql_output,outdata_fname) 
     df.to_csv(outdata_fpath + ".csv", index=False)
     print("Saved {}".format(outdata_fpath + ".csv"))
     # FileTools.save_yaml(output_dir, outdata_fname + ".yaml", collected_data, package=2)   
 
+#%%
+if __name__ == "__main__":
+    # Multiprocssing?
+    post_multi = True
+
+    # sql outfile directory
+    run_dir = os.path.dirname(os.path.realpath(__file__))   
+    output_dir = os.path.join(run_dir, "outputs/06_raft_doe") # def: 06_openfast_doe
+    save_csv_of_parametric_runs(post_multi,output_dir)
