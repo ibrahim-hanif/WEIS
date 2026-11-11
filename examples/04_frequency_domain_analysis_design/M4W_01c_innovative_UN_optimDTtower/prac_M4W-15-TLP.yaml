@@ -940,12 +940,12 @@ components:
             distance_mb_mb: 5.0
             overhang: 12.0313
             cd: 0.5
-        gearbox: # NOTE: fixed during optim; so no change in vals for GB
-            gear_ratio: 49.61325590726571
-            efficiency: 0.992
-            mass: 138728.6451
-            length: 2.7636198183
-            radius: 2.3120240000000005
+        gearbox: # NOTE: fixed during optim; cf. D5.1 R3
+            gear_ratio: 51.7541
+            efficiency: 0.986571
+            mass: 112531.001 # = 102300.91*1.1
+            length: 3.3418 # = (556+2*(556+385+300))*1.1/1e3
+            radius: 2.1296 # = (32*121*1.1)/2e3
         lss:
             diameter: [2.5, 2.5]
             wall_thickness: [0.1, 0.1]
