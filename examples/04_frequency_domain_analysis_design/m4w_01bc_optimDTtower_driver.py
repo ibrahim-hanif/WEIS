@@ -330,9 +330,9 @@ labels_compr=[
         f"Integrated",
     ]
 clrs_compr=[
-    "0.7", #"turquoise",
-    "tab:green", #"tab:cyan",
-    "tab:pink", #"tab:blue"
+    "0.7",          #"turquoise",
+    "tab:green",    #"tab:cyan",
+    "#ed0dd9",  # fuchsia
     ]
 
 # %%
@@ -356,7 +356,7 @@ elif flag_DTandTower:
     optim_label = labels_compr[2]
     ref_label = labels_compr[1]
 
-    legend_anchor_box = ()
+    legend_anchor_box = (0.7, 0.35)
 
     clrs_compr_tower = clrs_compr[1:].copy()
 
@@ -385,7 +385,7 @@ for iplot in range(2):
     for iline in range(3):
         ax_TowerGeo[ iplot ].lines[ iline ].set_linewidth( linewidth )
         if iline != 0: ax_TowerGeo[ iplot ].lines[ iline ].set_marker(".")
-        if iline == 1: ax_TowerGeo[ iplot ].lines[ iline ].set_linestyle("--")
+        if (not flag_DTandTower) and iline == 1: ax_TowerGeo[ iplot ].lines[ iline ].set_linestyle("--")
 #
 ax_TowerGeo[0].legend()
 ax_TowerGeo[0].legend_.set_bbox_to_anchor( legend_anchor_box )
@@ -409,6 +409,19 @@ if 0: #flag_save_plots:
 # variables to parse from each csv output
 from Drive4Wind.utilities.raft_helpers import lst_variables, parse_variables_from_csv_to_dict
 
+#%%
+lst_variables_new = lst_variables.copy()
+
+lst_variables_new.extend(
+    [
+        "drivese.F_mb1", "drivese.F_mb2",
+        "drivese.M_mb1", "drivese.M_mb2",
+        "drivese.rna_cm",
+
+        "outputs_2_screen.aep","outputs_2_screen.lcoe",
+    ]
+)
+
 tendon_index = 0
 str_max_Tmoor_anchor = f"raft.max_Tmoor_{tendon_index+1}_anchor"
 
@@ -426,7 +439,7 @@ for i, csv_dir in enumerate(lst_output_folder):
 # parse into df
 outputs_df, outputs_dict = parse_variables_from_csv_to_dict(
     lst_csv_outputs=lst_csv_outputs,
-    lst_variables=lst_variables,
+    lst_variables=lst_variables_new,
     tendon_index=tendon_index
 )
 
@@ -462,10 +475,71 @@ rpm_min = eval(dict_iea15['drivese.minimum_rpm'])
 rpm_rated = eval(dict_iea15['drivese.rated_rpm'])
 
 # %%[markdown]
-# ### Plot drivetrain-base & tower base loads comparison
+# ### Plot loads (force, moments) comparison
 #%%
 from Drive4Wind.utilities.raft_helpers import plot_bars_force_moment_loads
 
+#%%
+# Main-bearing loads
+
+# 1. MB 1
+fig_mb1, axs_mb1, F_mb1, M_mb1 = plot_bars_force_moment_loads(
+    path_csv_of_all_outputs=csv_all_results,
+    var_force="drivese.F_mb1",
+    var_moment="drivese.M_mb1",
+
+    design_labels=labels_compr_raft,
+
+    reference_index=0,
+
+    colors= clrs_compr_raft,
+
+    figsize=(17,7),
+    show_percent=True,
+    percent_decimals=0,
+    title="Main-Bearing 1 Loads Comparison"
+)
+
+# 2. MB 2
+fig_mb2, axs_mb2, F_mb2, M_mb2 = plot_bars_force_moment_loads(
+    path_csv_of_all_outputs=csv_all_results,
+    var_force="drivese.F_mb2",
+    var_moment="drivese.M_mb2",
+
+    design_labels=labels_compr_raft,
+
+    reference_index=0,
+
+    colors= clrs_compr_raft,
+
+    figsize=(17,7),
+    show_percent=True,
+    percent_decimals=0,
+    title="Main-Bearing 2 Loads Comparison"
+)
+
+# save
+if 0: #flag_save_plots:
+    str_extn = ".png"
+
+    path_mb1Loads_compr = os.path.join(
+        run_dir,
+        f"outputs\\compr_mb1Loads{str_extn}"
+    )
+    path_mb2Loads_compr = os.path.join(
+            run_dir,
+            f"outputs\\compr_mb2Loads{str_extn}"
+        )
+    
+    fig_mb1.savefig(
+        path_mb1Loads_compr,
+        bbox_inches="tight",
+        dpi=300 )
+    fig_mb2.savefig(
+            path_mb2Loads_compr,
+            bbox_inches="tight",
+            dpi=300 )
+    
 #%%
 # Drivetrain-base or tower-top loads
 fig, axs, F, M = plot_bars_force_moment_loads(
