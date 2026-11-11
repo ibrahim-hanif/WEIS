@@ -282,7 +282,7 @@ if case_user == "innovative":
 fig_DTconstrs, ax_DTconstrs = plot_drivetrain_constraints(
     csv_file,lst_constrs=lst_DTconstrs,flag_WTnamespace=True)
 
-if (case_user == "basecase") and (flag_GBO is True): # TODO
+if (case_user == "basecase"):# and (flag_GBO is True): # TODO
     fig_DTconstrs.axes[1].patches[0].set_color("tab:green")
     fig_DTconstrs.axes[1].patches[1].set_color("tab:green")
     fig_DTconstrs.axes[1].patches[5].set_color("tab:green")
@@ -322,34 +322,53 @@ if 0: #flag_save_plots:
 
 # fig_TowerConstrs
 
+#%% options for plotting
+
+labels_compr=[
+        "Basecase",
+        f"De-coupled",
+        f"Integrated",
+    ]
+clrs_compr=[
+    "0.7", #"turquoise",
+    "tab:green", #"tab:cyan",
+    "tab:pink", #"tab:blue"
+    ]
+
 # %%
 # Tower geometry
 from Drive4Wind.utilities.plot_tower_data import plot_tower_geo_comparison
+
+clrs_compr_tower = clrs_compr[:2].copy()
 
 # ---- geo yaml and labels
 if flag_onlyTower:
     optim_yaml = loc_yaml_geo_tower_optim
     ref_yaml = loc_yaml_geo_dt_optim
-    optim_label = "De-coupled"
-    ref_label = "Basecase"
+    optim_label = labels_compr[1]
+    ref_label = labels_compr[0]
 
     legend_anchor_box = (0.7, 0.35)
 
 elif flag_DTandTower:
     optim_yaml = loc_yaml_geo_wt_optim
     ref_yaml = loc_yaml_geo_tower_optim
-    optim_label = "Integrated"
-    ref_label = "De-coupled"
+    optim_label = labels_compr[2]
+    ref_label = labels_compr[1]
 
     legend_anchor_box = ()
+
+    clrs_compr_tower = clrs_compr[1:].copy()
 
 else:
     optim_yaml = loc_yaml_geo_basecase
     ref_yaml = loc_yaml_geo_basecase
-    optim_label = "Basecase tower"
-    ref_label = "Basecase tower"
+    optim_label = labels_compr[0] + " tower"
+    ref_label = labels_compr[0] + " tower"
 
     legend_anchor_box = (0.9, 0.35)
+
+clrs_compr_tower.append("darkgreen") # for tower-transition
 
 # ----
 
@@ -357,7 +376,7 @@ fig_TowerGeo, ax_TowerGeo = plot_tower_geo_comparison(
     optim_yaml,
     ref_yaml,
     m4w_label=optim_label, iea_label=ref_label,
-    colors=[ "k", "tab:blue", "darkgreen" ]
+    colors= clrs_compr_tower
 )
 
 fig_TowerGeo.set_size_inches([13,8])
@@ -416,21 +435,13 @@ csv_all_results = os.path.join(
     run_dir, f"outputs\\compr_decoupl_integrated.csv"
 )
 
-if 0:
-  outputs_df.to_csv( csv_all_results, index=False )
+if 0: outputs_df.to_csv( csv_all_results, index=False )
 
 #%% options for plotting
 
-labels_compr=[
-        # "Reference",
-        f"De-coupled",
-        f"Integrated",
-    ]
-clrs_compr=[
-    # "0.7", #"turquoise",
-    "tab:green", #"tab:cyan",
-    "tab:red", #"tab:blue"
-    ]
+labels_compr_raft = labels_compr[1:]
+clrs_compr_raft = clrs_compr[1:]
+markers_compr=["v", "^"]
 
 RBM_NAMES_SYMB_DICT = {
     "surge": r"$(x)$",
@@ -462,11 +473,11 @@ fig, axs, F, M = plot_bars_force_moment_loads(
     var_force="drivese.base_F",
     var_moment="drivese.base_M",
 
-    design_labels=labels_compr,
+    design_labels=labels_compr_raft,
 
     reference_index=0,
 
-    colors= clrs_compr,
+    colors= clrs_compr_raft,
 
     figsize=(17,7),
     show_percent=True,
@@ -478,7 +489,7 @@ fig, axs, F, M = plot_bars_force_moment_loads(
 if 0: #flag_save_plots:
     path_twrTopLoads_compr = os.path.join(
         run_dir,
-        f"outputs\\compr_twrTopLoads_{str_compn_n_percent}.png"
+        f"outputs\\compr_twrTopLoads.png"
     )
     fig.savefig(
         path_twrTopLoads_compr,
@@ -492,11 +503,11 @@ fig, axs, F, M = plot_bars_force_moment_loads(
     var_force="towerse.tower.turbine_F",
     var_moment="towerse.tower.turbine_M",
 
-    design_labels=labels_compr,
+    design_labels=labels_compr_raft,
 
     reference_index=0,
 
-    colors= clrs_compr,
+    colors= clrs_compr_raft,
 
     figsize=(17,7),
     show_percent=True,
@@ -508,7 +519,7 @@ fig, axs, F, M = plot_bars_force_moment_loads(
 if 0: #flag_save_plots:
     path_twrBaseLoads_compr = os.path.join(
         run_dir,
-        f"outputs\\compr_twrBaseLoads_{str_compn_n_percent}.png"
+        f"outputs\\compr_twrBaseLoads.png"
     )
     fig.savefig(
         path_twrBaseLoads_compr,
@@ -539,8 +550,8 @@ fig, axs, values, differences = (
 
         lst_vars=lst_vars_max,
 
-        design_labels=labels_compr,
-        colors=clrs_compr,
+        design_labels=labels_compr_raft,
+        colors=clrs_compr_raft,
 
         show_percent=True,
         percent_decimals=1,
@@ -553,7 +564,7 @@ fig, axs, values, differences = (
 if 0: #flag_save_plots:
     path_maxDynamicVariables_compr = os.path.join(
         run_dir,
-        f"outputs\\compr_maxDynamicVariables_{str_compn_n_percent}.png"
+        f"outputs\\compr_maxDynamicVariables.png"
     )
     fig.savefig(
         path_maxDynamicVariables_compr,
@@ -578,8 +589,8 @@ fig, axs, values_RBM, differences_RBM = (
         reference_index=0,
 
         figsize=(15, 9),
-        design_labels=labels_compr,
-        colors=clrs_compr,
+        design_labels=labels_compr_raft,
+        colors=clrs_compr_raft,
 
         show_percent=True,
         percent_decimals=1,
@@ -591,7 +602,7 @@ fig, axs, values_RBM, differences_RBM = (
 if 0: #flag_save_plots:
     path_compr_RBM = os.path.join(
         run_dir,
-        f"outputs\\compr_RBM_{str_compn_n_percent}.png"
+        f"outputs\\compr_RBM.png"
     )
     fig.savefig(
         path_compr_RBM,
@@ -618,8 +629,8 @@ fig, ax, rbm_periods, tower_periods = (
         hub_height=hub_height, 
         rpm_min=rpm_min,
         rpm_rated=rpm_rated,
-        design_labels=labels_compr,
-        colors=clrs_compr_w_black,
+        design_labels=labels_compr_raft,
+        colors=clrs_compr_raft,
         markers=["o", "v", "^"],
         figsize=(21, 10),
         title="Excitation, Rigid-Body and Tower-Bending Frequency Comparison"
@@ -637,7 +648,7 @@ if 0: #flag_save_plots:
     path_freq = os.path.join(
         run_dir,
         "outputs",
-        f"compr_natPeriods_to_excitation_{str_compn_n_percent}.png"
+        f"compr_natPeriods_to_excitation.png"
     )
 
     fig.savefig(
@@ -677,9 +688,9 @@ fig, axs, values_WS, differences_WS = (
         index_start_end=index_start_end,
 
         figsize=(16, 12),
-        design_labels=labels_compr,
-        colors=clrs_compr_w_black,
-        markers=[ "o", "v", "^"],
+        design_labels=labels_compr_raft,
+        colors=clrs_compr_raft,
+        markers=markers_compr,
         title=f"Maximum Response vs. Wind-Speed Comparison (DLC {DLC})"
     )
 )
@@ -687,7 +698,7 @@ fig, axs, values_WS, differences_WS = (
 if 0: #flag_save_plots:
     path_compr_response_with_WS = os.path.join(
         run_dir,
-        f"outputs\\compr_response_with_WS_{str_compn_n_percent}.png"
+        f"outputs\\compr_response_with_WS.png"
     )
     fig.savefig(
         path_compr_response_with_WS,
@@ -716,9 +727,9 @@ fig, axs, Tmoor_DLC11, diff_DLC11 = (
         tendon_index=tendon_index,
         reference_index=0,
         figsize=(16,6),
-        design_labels=labels_compr,
-        colors=clrs_compr_w_black,
-        markers=[ "o", "v", "^"],
+        design_labels=labels_compr_raft,
+        colors=clrs_compr_raft,
+        markers=markers_compr,
         title = f"Tendon {tendon_index+1} Maximum Tensions (DLC {DLC})"
     )
 )
@@ -728,7 +739,7 @@ if 0: #flag_save_plots:
 
     path_compr_TmoorMax = os.path.join(
         run_dir,
-        f"outputs\\compr_Tmoor_{tendon_index+1}_max_with_WS_{str_compn_n_percent}"+str_extn
+        f"outputs\\compr_Tmoor_{tendon_index+1}_max_with_WS"+str_extn
     )
     fig.savefig(
         path_compr_TmoorMax,
