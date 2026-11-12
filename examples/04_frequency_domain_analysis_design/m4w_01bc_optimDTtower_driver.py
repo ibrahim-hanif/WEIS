@@ -253,8 +253,24 @@ folder_results = dict_analy["general"]["folder_output"]
 fname_results = dict_analy["general"]["fname_output"]
 csv_file = os.path.join( run_dir, folder_results, fname_results + ".csv" )
 
+# colors
 from Drive4Wind.post_processing.color_schemes import read_color_scheme, loc_clr_scheme_m4w
 clrs_m4w = read_color_scheme(loc_clr_scheme_m4w)
+
+if case_user == "innovative":
+    clrs_compr=[        # magenta colors
+        "0.7",          
+        "magenta",    
+        "#c20078",  
+    ]
+elif case_user == "basecase":
+    clrs_compr=[        # gold colors
+        "0.7",          
+        "gold",    
+        "goldenrod",  
+    ]
+
+markers_compr = [ ",", ".", "*" ]
 
 # plt.rcParams.update( plot_rcParams_update )
 linewidth = 3
@@ -267,10 +283,18 @@ params_plot_rc = {
     }
 plt.rcParams.update( params_plot_rc )
 
+labels_compr=[
+    "Basecase",
+    f"De-coupled",
+    f"Integrated",
+]
+
 #%%
 # Drivetrain utilities
-from Drive4Wind.utilities.utilities_drivetrain import plot_drivetrain_constraints
+from Drive4Wind.utilities.utilities_drivetrain import plot_drivetrain_constraints, plot_drivetrain_mass_comparison
 
+#%%
+# Drivetrain constraints
 lst_DTconstrs = [
     "constr_lss_vonmises", "constr_bedplate_vonmises",
     "constr_shaft_deflection", "constr_shaft_angle",
@@ -280,7 +304,12 @@ if case_user == "innovative":
     lst_DTconstrs.append("constr_hss_vonmises")
 
 fig_DTconstrs, ax_DTconstrs = plot_drivetrain_constraints(
-    csv_file,lst_constrs=lst_DTconstrs,flag_WTnamespace=True)
+    csv_path=csv_file,
+    lst_constrs=lst_DTconstrs,
+    colors=clrs_compr,
+    # markers=markers_compr,
+    flag_WTnamespace=True
+)
 
 if (case_user == "basecase"):# and (flag_GBO is True): # TODO
     fig_DTconstrs.axes[1].patches[0].set_color("tab:green")
@@ -308,7 +337,8 @@ from Drive4Wind.utilities.plot_tower_data import plot_tower_constraints_stress_u
 fig_TowerConstrs, ax = plot_tower_constraints_stress_utils(
     csv_file,
     figsize=(5.0,10.0),
-    colors=["tab:blue","tab:green","tab:orange"]
+    colors=clrs_compr,
+    markers=markers_compr,
 )
 
 if 0: #flag_save_plots: 
@@ -321,19 +351,6 @@ if 0: #flag_save_plots:
     )
 
 # fig_TowerConstrs
-
-#%% options for plotting
-
-labels_compr=[
-        "Basecase",
-        f"De-coupled",
-        f"Integrated",
-    ]
-clrs_compr=[
-    "0.7",          #"turquoise",
-    "tab:green",    #"tab:cyan",
-    "#ed0dd9",  # fuchsia
-    ]
 
 # %%
 # Tower geometry
@@ -385,7 +402,7 @@ for iplot in range(2):
     for iline in range(3):
         ax_TowerGeo[ iplot ].lines[ iline ].set_linewidth( linewidth )
         if iline != 0: ax_TowerGeo[ iplot ].lines[ iline ].set_marker(".")
-        if (not flag_DTandTower) and iline == 1: ax_TowerGeo[ iplot ].lines[ iline ].set_linestyle("--")
+        if iline == 1: ax_TowerGeo[ iplot ].lines[ iline ].set_linestyle("--")
 #
 ax_TowerGeo[0].legend()
 ax_TowerGeo[0].legend_.set_bbox_to_anchor( legend_anchor_box )
@@ -394,7 +411,7 @@ ax_TowerGeo[0].set_ylabel("Height along tower [m]")
 
 if 0: #flag_save_plots: 
     path_plot_tower_geo = os.path.join(
-            run_dir, folder_results, fname_results + "_tower_geo.png" )
+        run_dir, folder_results, fname_results + "_tower_geo.png" )
     fig_TowerGeo.savefig(
         path_plot_tower_geo,
         bbox_inches="tight",
@@ -449,6 +466,48 @@ csv_all_results = os.path.join(
 )
 
 if 0: outputs_df.to_csv( csv_all_results, index=False )
+
+#%%
+# Drivetrain mass comparison
+
+# colors
+from matplotlib import colormaps
+if case_user == "basecase":
+    code_cmap = "PuOr"
+elif case_user == "innovative":
+    code_cmap = "PiYG"
+colors_DTmassCompr = colormaps[code_cmap]( np.linspace(0,1,12) ) # NOTE: 12 = # of DT compns
+
+# plot
+fig_DTmass, axs_DTmass = plot_drivetrain_mass_comparison(
+    # de-coupled
+    csv_iea=lst_csv_outputs[0],
+    iea_label=labels_compr[1],
+    colors_iea=colors_DTmassCompr,
+    # integrated
+    csv_m4w=lst_csv_outputs[1],
+    m4w_label=labels_compr[2],
+    colors_m4w=colors_DTmassCompr,
+    #
+    fontsize_legend=20,
+    flag_WTnamespace=True,
+)
+
+# axs_DTmass.legend(loc="upper center",fontsize=20)
+
+# save
+if 0: #flag_save_plots:
+    str_extn = ".png"
+
+    path_DTmass_compr = os.path.join(
+        run_dir,
+        f"outputs\\compr_DTmass{str_extn}"
+    )
+
+    fig_DTmass.savefig(
+        path_DTmass_compr,
+        bbox_inches="tight",
+        dpi=300 )
 
 #%% options for plotting
 
@@ -536,9 +595,9 @@ if 0: #flag_save_plots:
         bbox_inches="tight",
         dpi=300 )
     fig_mb2.savefig(
-            path_mb2Loads_compr,
-            bbox_inches="tight",
-            dpi=300 )
+        path_mb2Loads_compr,
+        bbox_inches="tight",
+        dpi=300 )
     
 #%%
 # Drivetrain-base or tower-top loads
@@ -784,7 +843,7 @@ if 0: #flag_save_plots:
 from Drive4Wind.utilities.raft_helpers import plot_comparison_Tmoor_windspeed_from_csv
 
 # %%
-tendon_index = 0 # 0 = tendon 1 ; 3 = tendon 4
+tendon_index = 3 # 0 = tendon 1 ; 3 = tendon 4
 
 DLC = "1.1" # 1.1 or 1.6
 
