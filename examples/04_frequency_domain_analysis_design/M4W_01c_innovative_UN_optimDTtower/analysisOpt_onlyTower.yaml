@@ -3,7 +3,7 @@ general:
     fname_output: optim
 
 design_variables:
-    drivetrain: # NOTE: Direct-drive
+    drivetrain: # NOTE: Geared-drive; TODO: remove?, y confusion!
         # ---- LSS ----
         distance_hub_mb:
             flag: False
@@ -21,20 +21,32 @@ design_variables:
             flag: False
             lower_bound: 4e-3
             upper_bound: 1.0
-        # ---- nose ----
-        nose_diameter:
+        # ---- HSS ----
+        # hss_length:                 # TODO: absent in analy_opts schema!
+        #     flag: False
+        #     lower_bound: 0.1
+        #     upper_bound: 5.0
+        hss_diameter:
             flag: False
-            lower_bound: 0.5
-            upper_bound: 6.0
-        nose_wall_thickness:
+            lower_bound: 0.3
+            upper_bound: 3.0
+        hss_wall_thickness:
             flag: False
             lower_bound: 4e-3
             upper_bound: 1.0
         # ---- bedplate ----
-        bedplate_wall_thickness:
+        bedplate_web_thickness:
             flag: False
             lower_bound: 4e-3
             upper_bound: 1.0
+        bedplate_flange_thickness:
+            flag: False
+            lower_bound: 4e-3
+            upper_bound: 1.0
+        bedplate_flange_width:
+            flag: False
+            lower_bound: 0.01
+            upper_bound: 3.0
 
     tower:                          
         outer_diameter:
@@ -50,6 +62,8 @@ constraints:
     drivetrain:
         # ---- LSS ----
         lss: # von mises
+            flag: False
+        hss:
             flag: False
         mb1: # deflection
             flag: False
@@ -74,10 +88,6 @@ constraints:
         height:
             flag: False
         length:
-            flag: False
-        ecc:
-            flag: False
-        access:
             flag: False
 
     #(v) ---- TODO! MB FLS constraints ----
@@ -122,7 +132,7 @@ constraints:
             # stiff-stiff (cf. iea15mw semi sub report); tower freqs (tab 8):
             # - fore aft: 0.496
             # - side side: 0.483
-            lower_bound: 0.40 # 0.45
+            lower_bound: 0.45 # 0.45
 
     floating: # TODO 1
         Max_Offset: #(v) Maximum combined surge/sway offset
