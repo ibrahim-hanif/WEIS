@@ -5,7 +5,11 @@
 # 1. analysis of iea 15mw design (in UN site)
 # 2. only DT optimization
 # 3. only Tower optimization (with optim DT)
-# 4. (X) DT + Tower optim
+# 4. DT + Tower optim
+#
+# Cases of turbines:
+# 1. basecase: iea 15mw with direct-drive drivetrain
+# 2. innovative: made4wind 154mw with medium-speed geared drivetrain
 #
 # Progress:
 # 1. TODO: 
@@ -29,7 +33,7 @@ case_dict = {
     "basecase":     "M4W_01b_basecase_UN_optimDTtower",
     "innovative":   "M4W_01c_innovative_UN_optimDTtower"
 }
-case_user = "innovative" # TODO: select "basecase" or "innovative"
+case_user = "basecase" # TODO: select "basecase" or "innovative"
 case_loc = case_dict[ case_user ]
 # ----
 
@@ -43,7 +47,7 @@ flag_DTandTower = True # NOTE: # 3 (not for iea15 DD)
 
 wt_optim = True # turbine to analyse: True = new optim / False = base case
 
-flag_load_results_csv = True
+flag_load_results_csv = True # True = load results from csv (if already run) ; False = run WEIS
 
 #%%
 ## File management
@@ -259,15 +263,26 @@ clrs_m4w = read_color_scheme(loc_clr_scheme_m4w)
 
 if case_user == "innovative":
     clrs_compr=[        # magenta colors
-        "0.7",          
-        "magenta",    
-        "#c20078",  
+        "orange",          # NOTE: = basecase's integ, aka "Reference"
+        "violet",    
+        "magenta",  
     ]
+    labels_compr=[
+        "Reference",
+        "De-coupled",
+        "Integrated",
+    ]
+
 elif case_user == "basecase":
     clrs_compr=[        # gold colors
         "0.7",          
-        "gold",    
-        "goldenrod",  
+        'gold',
+        'orange',
+    ]
+    labels_compr=[
+        "Basecase",
+        "De-coupled",
+        "Integrated",
     ]
 
 markers_compr = [ ",", ".", "*" ]
@@ -282,12 +297,6 @@ params_plot_rc = {
         "lines.markersize": 10, #linewidth*3,
     }
 plt.rcParams.update( params_plot_rc )
-
-labels_compr=[
-    "Basecase",
-    f"De-coupled",
-    f"Integrated",
-]
 
 #%%
 # Drivetrain utilities
@@ -320,8 +329,10 @@ else: # innovative
 
 # save
 if 0: #flag_save_plots:
+    str_extn = ".png"
+
     path_plot_dt_constr = os.path.join(
-        run_dir, folder_results, fname_results + "_DT_constrs.png" )
+        run_dir, folder_results, fname_results + "_DT_constrs" + str_extn )
     fig_DTconstrs.savefig(
         path_plot_dt_constr,
         bbox_inches="tight",
@@ -342,8 +353,10 @@ fig_TowerConstrs, ax = plot_tower_constraints_stress_utils(
 )
 
 if 0: #flag_save_plots: 
+    str_extn = ".png"
+
     path_plot_tower_constr = os.path.join(
-            run_dir, folder_results, fname_results + "_tower_constrs.png" )
+            run_dir, folder_results, fname_results + "_tower_constrs" + str_extn )
     fig_TowerConstrs.savefig(
         path_plot_tower_constr,
         bbox_inches="tight",
@@ -410,8 +423,10 @@ ax_TowerGeo[0].legend_.set_bbox_to_anchor( legend_anchor_box )
 ax_TowerGeo[0].set_ylabel("Height along tower [m]")
 
 if 0: #flag_save_plots: 
+    str_extn = ".png"
+
     path_plot_tower_geo = os.path.join(
-        run_dir, folder_results, fname_results + "_tower_geo.png" )
+        run_dir, folder_results, fname_results + "_tower_geo" + str_extn )
     fig_TowerGeo.savefig(
         path_plot_tower_geo,
         bbox_inches="tight",
@@ -435,6 +450,8 @@ lst_variables_new.extend(
         "drivese.M_mb1", "drivese.M_mb2",
         "drivese.rna_cm",
 
+        "towerse.tower_mass", "floatingse.turbine_mass",
+        
         "outputs_2_screen.aep","outputs_2_screen.lcoe",
     ]
 )
@@ -453,6 +470,22 @@ for i, csv_dir in enumerate(lst_output_folder):
   csv_file = os.path.join( run_dir, csv_dir )
   lst_csv_outputs[i] = csv_file
 
+# insert the basecase NOoptim results as first element
+if case_user == "basecase":
+    csv_basecase_NOoptim_results = "outputs\\NOoptim\\NOoptim.csv"
+    basecaseNOoptim_results_dir = os.path.join(
+        main_dir, case_dict["basecase"],
+        csv_basecase_NOoptim_results
+    )
+    lst_csv_outputs.insert(0, basecaseNOoptim_results_dir)
+
+elif case_user == "innovative":
+    basecaseDTnTower_results_dir = os.path.join(
+        main_dir, case_dict["basecase"],
+        lst_output_folder[-1]
+    )
+    lst_csv_outputs.insert(0, basecaseDTnTower_results_dir)    
+
 # parse into df
 outputs_df, outputs_dict = parse_variables_from_csv_to_dict(
     lst_csv_outputs=lst_csv_outputs,
@@ -468,25 +501,75 @@ csv_all_results = os.path.join(
 if 0: outputs_df.to_csv( csv_all_results, index=False )
 
 #%%
+# Mass comparison overview -- nacelle, tower, turbine
+from Drive4Wind.utilities.plot_tower_data import plot_nac_tower_mass_comparison
+
+#%%
+fig_TurbMass, ax_TurbMass = plot_nac_tower_mass_comparison(
+    path_csv_compr_turbs=csv_all_results,
+    figsize=(10, 10),
+    labels=labels_compr,
+    colors=clrs_compr,
+    title="",
+    box_legend=(1.0,1.05),
+)
+
+# save
+if 0:
+    str_extn = ".png"
+
+    path_TurbMass_compr = os.path.join(
+        run_dir,
+        f"outputs\\compr_TurbMass{str_extn}"
+    )
+
+    fig_TurbMass.savefig(
+        path_TurbMass_compr,
+        bbox_inches="tight",
+        dpi=300 )
+
+#%%
 # Drivetrain mass comparison
 
 # colors
 from matplotlib import colormaps
+
 if case_user == "basecase":
-    code_cmap = "PuOr"
+    code_cmap = "YlOrBr" # "YlOrBr" #"PuOr"
 elif case_user == "innovative":
-    code_cmap = "PiYG"
-colors_DTmassCompr = colormaps[code_cmap]( np.linspace(0,1,12) ) # NOTE: 12 = # of DT compns
+    code_cmap = "RdPu" #"PiYG" # RdPu
+colors_DTmassCompr = colormaps[code_cmap]( np.linspace(0,1,5) ) # NOTE: 12 = # of DT compns
+
+#%%
+# what to compare
+lst_str_compr_DTmass = ["base-decoupl", "decoupl-integ"]
+str_compr_DTmass = lst_str_compr_DTmass[0] # TODO: (0/1) user specified
+#
+if "base" in str_compr_DTmass:
+    # 
+    csv_iea=lst_csv_outputs[0]
+    iea_label=labels_compr[0]
+    #
+    csv_m4w=lst_csv_outputs[1]
+    m4w_label=labels_compr[1]
+
+elif "integ" in str_compr_DTmass:
+    # 
+    csv_iea=lst_csv_outputs[1]
+    iea_label=labels_compr[1]
+    #
+    csv_m4w=lst_csv_outputs[2]
+    m4w_label=labels_compr[2]
 
 # plot
 fig_DTmass, axs_DTmass = plot_drivetrain_mass_comparison(
     # de-coupled
-    csv_iea=lst_csv_outputs[0],
-    iea_label=labels_compr[1],
+    csv_iea=csv_iea,
+    iea_label=iea_label,
     colors_iea=colors_DTmassCompr,
     # integrated
-    csv_m4w=lst_csv_outputs[1],
-    m4w_label=labels_compr[2],
+    csv_m4w=csv_m4w,
+    m4w_label=m4w_label,
     colors_m4w=colors_DTmassCompr,
     #
     fontsize_legend=20,
@@ -501,7 +584,7 @@ if 0: #flag_save_plots:
 
     path_DTmass_compr = os.path.join(
         run_dir,
-        f"outputs\\compr_DTmass{str_extn}"
+        f"outputs\\compr_DTmass_{str_compr_DTmass}{str_extn}"
     )
 
     fig_DTmass.savefig(
@@ -509,11 +592,12 @@ if 0: #flag_save_plots:
         bbox_inches="tight",
         dpi=300 )
 
-#%% options for plotting
+#%%
+# options for plotting from raft results
 
 labels_compr_raft = labels_compr[1:]
 clrs_compr_raft = clrs_compr[1:]
-markers_compr=["v", "^"]
+markers_compr=["o", "v", "^"]
 
 RBM_NAMES_SYMB_DICT = {
     "surge": r"$(x)$",
@@ -547,11 +631,11 @@ fig_mb1, axs_mb1, F_mb1, M_mb1 = plot_bars_force_moment_loads(
     var_force="drivese.F_mb1",
     var_moment="drivese.M_mb1",
 
-    design_labels=labels_compr_raft,
+    design_labels=labels_compr,
 
     reference_index=0,
 
-    colors= clrs_compr_raft,
+    colors= clrs_compr,
 
     figsize=(17,7),
     show_percent=True,
@@ -565,11 +649,11 @@ fig_mb2, axs_mb2, F_mb2, M_mb2 = plot_bars_force_moment_loads(
     var_force="drivese.F_mb2",
     var_moment="drivese.M_mb2",
 
-    design_labels=labels_compr_raft,
+    design_labels=labels_compr,
 
     reference_index=0,
 
-    colors= clrs_compr_raft,
+    colors= clrs_compr,
 
     figsize=(17,7),
     show_percent=True,
@@ -606,13 +690,13 @@ fig, axs, F, M = plot_bars_force_moment_loads(
     var_force="drivese.base_F",
     var_moment="drivese.base_M",
 
-    design_labels=labels_compr_raft,
+    design_labels=labels_compr,
 
     reference_index=0,
 
-    colors= clrs_compr_raft,
+    colors= clrs_compr,
 
-    figsize=(17,7),
+    figsize=(15,15),
     show_percent=True,
     percent_decimals=0,
     title="Tower-Top Loads Comparison"
@@ -636,11 +720,11 @@ fig, axs, F, M = plot_bars_force_moment_loads(
     var_force="towerse.tower.turbine_F",
     var_moment="towerse.tower.turbine_M",
 
-    design_labels=labels_compr_raft,
+    design_labels=labels_compr,
 
     reference_index=0,
 
-    colors= clrs_compr_raft,
+    colors= clrs_compr,
 
     figsize=(17,7),
     show_percent=True,
@@ -683,8 +767,8 @@ fig, axs, values, differences = (
 
         lst_vars=lst_vars_max,
 
-        design_labels=labels_compr_raft,
-        colors=clrs_compr_raft,
+        design_labels=labels_compr,
+        colors=clrs_compr,
 
         show_percent=True,
         percent_decimals=1,
@@ -722,8 +806,8 @@ fig, axs, values_RBM, differences_RBM = (
         reference_index=0,
 
         figsize=(15, 9),
-        design_labels=labels_compr_raft,
-        colors=clrs_compr_raft,
+        design_labels=labels_compr,
+        colors=clrs_compr,
 
         show_percent=True,
         percent_decimals=1,
@@ -762,9 +846,9 @@ fig, ax, rbm_periods, tower_periods = (
         hub_height=hub_height, 
         rpm_min=rpm_min,
         rpm_rated=rpm_rated,
-        design_labels=labels_compr_raft,
-        colors=clrs_compr_raft,
-        markers=["o", "v", "^"],
+        design_labels=labels_compr,
+        colors=clrs_compr_w_black,
+        markers=markers_compr,
         figsize=(21, 10),
         title="Excitation, Rigid-Body and Tower-Bending Frequency Comparison"
     )
@@ -821,8 +905,8 @@ fig, axs, values_WS, differences_WS = (
         index_start_end=index_start_end,
 
         figsize=(16, 12),
-        design_labels=labels_compr_raft,
-        colors=clrs_compr_raft,
+        design_labels=labels_compr,
+        colors=clrs_compr_w_black,
         markers=markers_compr,
         title=f"Maximum Response vs. Wind-Speed Comparison (DLC {DLC})"
     )
@@ -843,7 +927,7 @@ if 0: #flag_save_plots:
 from Drive4Wind.utilities.raft_helpers import plot_comparison_Tmoor_windspeed_from_csv
 
 # %%
-tendon_index = 3 # 0 = tendon 1 ; 3 = tendon 4
+tendon_index = 0 # 0 = tendon 1 ; 3 = tendon 4
 
 DLC = "1.1" # 1.1 or 1.6
 
@@ -860,8 +944,8 @@ fig, axs, Tmoor_DLC11, diff_DLC11 = (
         tendon_index=tendon_index,
         reference_index=0,
         figsize=(16,6),
-        design_labels=labels_compr_raft,
-        colors=clrs_compr_raft,
+        design_labels=labels_compr,
+        colors=clrs_compr,
         markers=markers_compr,
         title = f"Tendon {tendon_index+1} Maximum Tensions (DLC {DLC})"
     )
@@ -881,3 +965,4 @@ if 0: #flag_save_plots:
     )
 
 # %%
+# TODO: aep and lcoe compr: bar plot for both, basecase and innovative
