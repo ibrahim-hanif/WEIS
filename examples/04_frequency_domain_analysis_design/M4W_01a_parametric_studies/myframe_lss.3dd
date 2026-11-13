@@ -1,0 +1,85 @@
+pyFrame3dd auto-generated file
+
+5 # number of nodes
+#.node  x       y       z       r
+#        m      m      m      m
+
+1	-1.0539973390537494	0.0	0.0	0.0
+2	-1.6631906555341653	0.0	0.0	0.0
+3	-2.2723839720145813	0.0	0.0	0.0
+4	-2.6769986695268746	0.0	0.0	0.0
+5	-3.081613367039168	0.0	0.0	0.0
+
+3 # number of nodes with reactions
+#.n     x  y  z xx yy zz          1=fixed, 0=free
+3	0.0	1.0	1.0	0.0	0.0	0.0
+1	1.0	1.0	1.0	0.0	0.0	0.0
+4	0.0	0.0	0.0	1.0	0.0	0.0
+
+4 # number of frame elements
+#.e n1 n2 Ax    Asy     Asz     Jxx     Iyy     Izz     E       G   roll density
+#   .  .  m^2   m^2     m^2     m^4     m^4     m^4     Pa      Pa  deg  kg/m^3
+1	1	2	1.1724419763793013	0.7212173320532639	0.7212173320532639	4.007216358126934	2.003608179063467	2.003608179063467	205000000000.0	80000000000.0	0.0	7850.0
+2	2	3	1.1308570386776327	0.6959739867326985	0.6959739867326985	3.6034430573502942	1.8017215286751471	1.8017215286751471	205000000000.0	80000000000.0	0.0	7850.0
+3	3	4	1.096318614849154	0.6750093756226988	0.6750093756226988	3.2891064808717485	1.6445532404358743	1.6445532404358743	205000000000.0	80000000000.0	0.0	7850.0
+4	4	5	1.0687915060256823	0.6583014973138315	0.6583014973138315	3.0518660381079235	1.5259330190539617	1.5259330190539617	205000000000.0	80000000000.0	0.0	7850.0
+
+
+1 # 1: include shear deformation
+1 # 1: include geometric stiffness
+10.0 # exaggerate static mesh deformations
+2.5 # zoom scale for 3D plotting
+-1 # x-axis increment for internal forces, m
+
+1 # number of static load cases
+
+# Begin Static Load Case 1 of 1
+
+# gravitational acceleration for self-weight loading (global)
+#.gX	gY     gZ
+#.m/s^2   m/s^2   m/s^2
+-1.0250406051954883	0.0	-9.75260989820676
+
+1	# number of loaded nodes
+#.e      Fx       Fy     Fz      Mxx     Myy     Mzz
+#        N        N      N       N.m     N.m     N.m
+5	3770355.1477116924	-16274.75617044873	50322.410844343714	80330980.3400872	-3089322.1862387634	13875012.75752087
+0 # number of uniform loads
+#.e    Ux   Uy   Uz
+#      N/m  N/m  N/m
+0 # number of trapezoidal loads
+#.e     x1       x2        w1      w2
+#       m        m         N/m     N/m
+0 # number of internal concentrated loads
+#.e    Px   Py    Pz   x    
+#      N    N     N    m
+0 # number of temperature loads
+#.e  alpha   hy   hz   Ty+  Ty-  Tz+  Tz-
+#    /degC   m    m   degC degC degC degC
+0    # number of nodes with prescribed displacements
+
+# End Static Load Case 1 of 1
+
+
+0    # number of desired dynamic modes of vibration
+1    # 1: subspace Jacobi     2: Stodola
+0    # 0: consistent mass ... 1: lumped mass matrix
+1e-09 # mode shape tolerance
+0.0  # shift value ... for unrestrained structures
+10.0 # exaggerate modal mesh deformations
+
+# nodes and concentrated mass and inertia
+3                               # number of nodes with extra inertia
+#.n      Mass   Ixx      Iyy      Izz
+#        kg    kg.m^2   kg.m^2   kg.m^2
+5	278516.80342287227	352058214.8461909	176162866.31559607	176162866.31559607
+4	184419.5	2598976.15663975	1370528.0065490417	1370528.0065490417
+2	24349.676185139204	17816.342614611378	8908.171307305689	8908.171307305689
+
+0 # frame elements with extra mass
+
+0				# number of modes to animate, nA
+  # list of modes to animate - omit if nA == 0
+2                               # pan rate during animation
+
+# End of input data file
