@@ -33,7 +33,7 @@ case_dict = {
     "basecase":     "M4W_01b_basecase_UN_optimDTtower",
     "innovative":   "M4W_01c_innovative_UN_optimDTtower"
 }
-case_user = "basecase" # TODO: select "basecase" or "innovative"
+case_user = "innovative" # TODO: select "basecase" or "innovative"
 case_loc = case_dict[ case_user ]
 # ----
 
@@ -53,14 +53,24 @@ flag_load_results_csv = True # True = load results from csv (if already run) ; F
 ## File management
 main_dir = os.path.dirname( os.path.abspath(__file__) ) 
 run_dir = os.path.join( main_dir, case_loc )
+
+# -- GEOMETRY windIO
 # --- Base case
 basecase_dir = os.path.join(
     run_dir, os.path.pardir, "M4W_01_base_case_UN_TLPwamit"
 )
 fname_yaml_geo_basecase = "prac_IEA-15-VolturnUS_rect.yaml" 
 loc_yaml_geo_basecase = os.path.join(basecase_dir, fname_yaml_geo_basecase)
+
+# --- Innovative ( Made4Wind geared )
 if case_user == "innovative":
-    fname_yaml_geo_innovative = "prac_M4W-15-TLP.yaml"
+    # integrated
+    if flag_DTandTower:
+        fname_yaml_geo_innovative = "prac_M4W-15-TLP-integrat.yaml"
+    # de-coupled
+    else: # so, flag_onlyDT and flag_onlyTower = True
+        fname_yaml_geo_innovative = "prac_M4W-15-TLP-decoupl.yaml"
+    # 
     loc_yaml_geo_basecase = os.path.join(run_dir, fname_yaml_geo_innovative)
 
 # --- Overrides
@@ -325,7 +335,9 @@ if (case_user == "basecase"):# and (flag_GBO is True): # TODO
     fig_DTconstrs.axes[1].patches[1].set_color("tab:green")
     fig_DTconstrs.axes[1].patches[5].set_color("tab:green")
 else: # innovative
-    fig_DTconstrs.axes[1].patches[4].set_color("tab:green")
+    fig_DTconstrs.axes[1].patches[0].set_color("tab:green")
+
+ax_DTconstrs[0].legend(loc="upper right")
 
 # save
 if 0: #flag_save_plots:
@@ -370,21 +382,24 @@ if 0: #flag_save_plots:
 from Drive4Wind.utilities.plot_tower_data import plot_tower_geo_comparison
 
 clrs_compr_tower = clrs_compr[:2].copy()
+labels_compr_tower = labels_compr.copy()
+labels_compr_tower[0] = "Basecase"
+
 
 # ---- geo yaml and labels
 if flag_onlyTower:
     optim_yaml = loc_yaml_geo_tower_optim
     ref_yaml = loc_yaml_geo_dt_optim
-    optim_label = labels_compr[1]
-    ref_label = labels_compr[0]
+    optim_label = labels_compr_tower[1]
+    ref_label = labels_compr_tower[0]
 
     legend_anchor_box = (0.7, 0.35)
 
 elif flag_DTandTower:
     optim_yaml = loc_yaml_geo_wt_optim
     ref_yaml = loc_yaml_geo_tower_optim
-    optim_label = labels_compr[2]
-    ref_label = labels_compr[1]
+    optim_label = labels_compr_tower[2]
+    ref_label = labels_compr_tower[1]
 
     legend_anchor_box = (0.7, 0.35)
 
@@ -393,8 +408,8 @@ elif flag_DTandTower:
 else:
     optim_yaml = loc_yaml_geo_basecase
     ref_yaml = loc_yaml_geo_basecase
-    optim_label = labels_compr[0] + " tower"
-    ref_label = labels_compr[0] + " tower"
+    optim_label = labels_compr_tower[0] + " tower"
+    ref_label = labels_compr_tower[0] + " tower"
 
     legend_anchor_box = (0.9, 0.35)
 
@@ -593,11 +608,44 @@ if 0: #flag_save_plots:
         dpi=300 )
 
 #%%
+# Plot nacelle CoM comparison
+from Drive4Wind.utilities.utilities_drivetrain import plot_nacelle_cm_comparison
+
+#%%
+
+markers_compr=["o", "v", "^"]
+
+
+figCM, axCM = plot_nacelle_cm_comparison(
+    path_csv_compr_turbs=csv_all_results,
+    # NacCM_array=NacCM_array,
+    labels=labels_compr,
+    colors=clrs_compr,
+    markers=markers_compr,
+    figsize=(12, 7),
+    markersize=180,
+    n_ticks=5,
+)
+
+# save
+if 0:
+    str_extn = ".png"
+
+    path_NacCM_compr = os.path.join(
+        run_dir,
+        f"outputs\\compr_NacCM{str_extn}"
+    )
+
+    figCM.savefig(
+        path_NacCM_compr,
+        bbox_inches="tight",
+        dpi=300 )
+
+#%%
 # options for plotting from raft results
 
 labels_compr_raft = labels_compr[1:]
 clrs_compr_raft = clrs_compr[1:]
-markers_compr=["o", "v", "^"]
 
 RBM_NAMES_SYMB_DICT = {
     "surge": r"$(x)$",
@@ -906,7 +954,7 @@ fig, axs, values_WS, differences_WS = (
 
         figsize=(16, 12),
         design_labels=labels_compr,
-        colors=clrs_compr_w_black,
+        colors=clrs_compr,
         markers=markers_compr,
         title=f"Maximum Response vs. Wind-Speed Comparison (DLC {DLC})"
     )
@@ -965,4 +1013,43 @@ if 0: #flag_save_plots:
     )
 
 # %%
-# TODO: aep and lcoe compr: bar plot for both, basecase and innovative
+# AEP and LCOE compr: bar plot for both, basecase and innovative
+
+#%%
+lst_vars_lcoe = [
+    ("outputs_2_screen.aep",       "AEP",           "[GW * h]"),
+    ("outputs_2_screen.lcoe",        "LCOE",           "[USD / MW / h]"),
+]
+
+fig_lcoe, axs_lcoe, values_lcoe, differences_lcoe = (
+    plot_comparison_bar_plot_of_float_vars_from_csv(
+        csv_all_results,
+        reference_index=0,
+
+        lst_vars=lst_vars_lcoe,
+
+        design_labels=labels_compr,
+        colors=clrs_compr,
+
+        show_percent=True,
+        percent_decimals=1,
+        figsize=(16,9),
+        title="AEP and LCOE Comparison",
+        idx_axis_show_legend=0
+    )
+)
+
+if 0:
+    str_extn = ".png"
+
+    path_lcoe_compr = os.path.join(
+        run_dir,
+        f"outputs\\compr_AEP_LCOE{str_extn}"
+    )
+    fig_lcoe.savefig(
+        path_lcoe_compr,
+        bbox_inches="tight",
+        dpi=300
+    )
+
+#%%
