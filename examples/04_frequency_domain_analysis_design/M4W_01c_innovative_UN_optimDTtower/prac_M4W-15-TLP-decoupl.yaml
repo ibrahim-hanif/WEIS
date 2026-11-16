@@ -936,8 +936,8 @@ components:
         outer_shape:
             uptilt: 6.0
             distance_tt_hub: 5.614
-            distance_hub_mb: 0.5
-            distance_mb_mb: 5.0
+            distance_hub_mb: 1.0
+            distance_mb_mb: 2.0
             overhang: 12.0313
             cd: 0.5
         gearbox: # NOTE: fixed during optim; cf. D5.1 R3
@@ -947,13 +947,13 @@ components:
             length: 3.3418 # = (556+2*(556+385+300))*1.1/1e3
             radius: 2.1296 # = (32*121*1.1)/2e3
         lss:
-            diameter: [2.5, 2.5]
-            wall_thickness: [0.1, 0.1]
+            diameter: [2.0, 2.0]
+            wall_thickness: [0.05, 0.05] # NOTE: same 0.05 thick all compns
             material: steel_drive
         hss:
-            length: 0.5 # TODO: 0.5
-            diameter: [0.3, 0.3] # TODO: 0.3
-            wall_thickness: [0.1, 0.1]
+            length: 0.5
+            diameter: [0.3, 0.3]
+            wall_thickness: [0.05, 0.05]
             material: steel_drive
         bedplate:
             flange_width: 2.0
@@ -963,7 +963,7 @@ components:
         other_components:
             mb1Type: CRB
             mb2Type: TRB2
-            # mb1_e: 0.4 # TODO: add
+            # mb1_e: 0.4 # TODO: used only for fatigue loads
             # mb2_e: 0.4
             uptower: true
             converter_mass: 5625.0
