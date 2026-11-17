@@ -509,11 +509,18 @@ outputs_df, outputs_dict = parse_variables_from_csv_to_dict(
 )
 
 # -- post-processing
+# 1. 3 setups = basecase vs de-coupl vs integrated
 csv_all_results = os.path.join(
+    run_dir, f"outputs\\compr-ref_optim-decoupl_intgr.csv"
+)
+# 2. 2 setups = de-coupl vs integrated
+csv_seqInt_results = os.path.join(
     run_dir, f"outputs\\compr_decoupl_integrated.csv"
 )
-
-if 0: outputs_df.to_csv( csv_all_results, index=False )
+# save
+if 0:
+    outputs_df.to_csv( csv_all_results, index=False )
+    outputs_df[1:].to_csv( csv_seqInt_results, index=False )
 
 #%%
 # Mass comparison overview -- nacelle, tower, turbine
@@ -627,6 +634,11 @@ figCM, axCM = plot_nacelle_cm_comparison(
     n_ticks=5,
 )
 
+figCM.suptitle(
+    "Nacelle Center of Mass Comparison",
+    x=0.5, y=0.87
+)
+
 # save
 if 0:
     str_extn = ".png"
@@ -643,9 +655,10 @@ if 0:
 
 #%%
 # options for plotting from raft results
+# =========================================================
 
-labels_compr_raft = labels_compr[1:]
-clrs_compr_raft = clrs_compr[1:]
+labels_compr_seqInt = labels_compr[1:]
+clrs_compr_seqInt = clrs_compr[1:]
 
 RBM_NAMES_SYMB_DICT = {
     "surge": r"$(x)$",
@@ -673,17 +686,19 @@ from Drive4Wind.utilities.raft_helpers import plot_bars_force_moment_loads
 #%%
 # Main-bearing loads
 
+# NOTE: only de-coupl vs. integrated design comparison
+
 # 1. MB 1
 fig_mb1, axs_mb1, F_mb1, M_mb1 = plot_bars_force_moment_loads(
-    path_csv_of_all_outputs=csv_all_results,
+    path_csv_of_all_outputs=csv_seqInt_results,
     var_force="drivese.F_mb1",
     var_moment="drivese.M_mb1",
 
-    design_labels=labels_compr,
+    design_labels=labels_compr_seqInt,
 
     reference_index=0,
 
-    colors= clrs_compr,
+    colors= clrs_compr_seqInt,
 
     figsize=(17,7),
     show_percent=True,
@@ -693,15 +708,15 @@ fig_mb1, axs_mb1, F_mb1, M_mb1 = plot_bars_force_moment_loads(
 
 # 2. MB 2
 fig_mb2, axs_mb2, F_mb2, M_mb2 = plot_bars_force_moment_loads(
-    path_csv_of_all_outputs=csv_all_results,
+    path_csv_of_all_outputs=csv_seqInt_results,
     var_force="drivese.F_mb2",
     var_moment="drivese.M_mb2",
 
-    design_labels=labels_compr,
+    design_labels=labels_compr_seqInt,
 
     reference_index=0,
 
-    colors= clrs_compr,
+    colors= clrs_compr_seqInt,
 
     figsize=(17,7),
     show_percent=True,
@@ -733,28 +748,42 @@ if 0: #flag_save_plots:
     
 #%%
 # Drivetrain-base or tower-top loads
+
+if case_user == "innovative": # only de-coupl vs. integr
+    csv_loads_TT_TB = csv_seqInt_results
+    labels_loads_TT_TB = labels_compr_seqInt
+    clrs_loads_TT_TB = clrs_compr_seqInt
+
+else:
+    csv_loads_TT_TB = csv_all_results
+    labels_loads_TT_TB = labels_compr
+    clrs_loads_TT_TB = clrs_compr
+
+
 fig, axs, F, M = plot_bars_force_moment_loads(
-    path_csv_of_all_outputs=csv_all_results,
+    path_csv_of_all_outputs=csv_loads_TT_TB,
     var_force="drivese.base_F",
     var_moment="drivese.base_M",
 
-    design_labels=labels_compr,
+    design_labels=labels_loads_TT_TB,
 
     reference_index=0,
 
-    colors= clrs_compr,
+    colors= clrs_loads_TT_TB,
 
-    figsize=(15,15),
+    figsize=(14,7),
     show_percent=True,
     percent_decimals=0,
     title="Tower-Top Loads Comparison"
 )
 
 # save
-if 0: #flag_save_plots:
+if 0:
+    str_extn = ".png"
+
     path_twrTopLoads_compr = os.path.join(
         run_dir,
-        f"outputs\\compr_twrTopLoads.png"
+        f"outputs\\compr_twrTopLoads{str_extn}"
     )
     fig.savefig(
         path_twrTopLoads_compr,
@@ -764,17 +793,17 @@ if 0: #flag_save_plots:
 #%%
 # Tower-base loads
 fig, axs, F, M = plot_bars_force_moment_loads(
-    path_csv_of_all_outputs=csv_all_results,
+    path_csv_of_all_outputs=csv_loads_TT_TB,
     var_force="towerse.tower.turbine_F",
     var_moment="towerse.tower.turbine_M",
 
-    design_labels=labels_compr,
+    design_labels=labels_loads_TT_TB,
 
     reference_index=0,
 
-    colors= clrs_compr,
+    colors= clrs_loads_TT_TB,
 
-    figsize=(17,7),
+    figsize=(14,7),
     show_percent=True,
     percent_decimals=0,
     title="Tower-Base Loads Comparison"
@@ -782,9 +811,11 @@ fig, axs, F, M = plot_bars_force_moment_loads(
 
 # save
 if 0: #flag_save_plots:
+    str_extn = ".png"
+
     path_twrBaseLoads_compr = os.path.join(
         run_dir,
-        f"outputs\\compr_twrBaseLoads.png"
+        f"outputs\\compr_twrBaseLoads{str_extn}"
     )
     fig.savefig(
         path_twrBaseLoads_compr,
@@ -895,7 +926,7 @@ fig, ax, rbm_periods, tower_periods = (
         rpm_min=rpm_min,
         rpm_rated=rpm_rated,
         design_labels=labels_compr,
-        colors=clrs_compr_w_black,
+        colors=clrs_compr,
         markers=markers_compr,
         figsize=(21, 10),
         title="Excitation, Rigid-Body and Tower-Bending Frequency Comparison"
@@ -909,11 +940,13 @@ print(" - freqs ", freq_range_1P, " Hz | Periods ", 1/freq_range_1P, " s." )
 print("3P (blade passing) ranges:")
 print(" - freqs ", freq_range_3P, " Hz | Periods ", 1/freq_range_3P, " s.\n" )
 
-if 0: #flag_save_plots:
+if 0:
+    str_extn = ".png"
+
     path_freq = os.path.join(
         run_dir,
         "outputs",
-        f"compr_natPeriods_to_excitation.png"
+        f"compr_natPeriods_to_excitation{str_extn}"
     )
 
     fig.savefig(
@@ -960,10 +993,12 @@ fig, axs, values_WS, differences_WS = (
     )
 )
 
-if 0: #flag_save_plots:
+if 0:
+    str_extn = ".png"
+
     path_compr_response_with_WS = os.path.join(
         run_dir,
-        f"outputs\\compr_response_with_WS.png"
+        f"outputs\\compr_response_with_WS{str_extn}"
     )
     fig.savefig(
         path_compr_response_with_WS,
